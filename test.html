@@ -263,10 +263,26 @@ function initMap() {
   // Register TWO maps: one for states, one for provinces overlay
   const stateGeo = { type:'FeatureCollection', features: stateFeatures };
   const provGeo = { type:'FeatureCollection', features: provFeatures };
-  const allGeo = { type:'FeatureCollection', features: CHINA_1351.features };
 
   echarts.registerMap('states1351', stateGeo);
   echarts.registerMap('prov1351', provGeo);
+
+  // Compute bounding box for perfectly aligned multi-geo layers
+  function getBBox(features) {
+    let minLng=180, maxLng=-180, minLat=90, maxLat=-90;
+    features.forEach(f => {
+      if(!f.geometry) return;
+      let polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+      polys.forEach(poly => poly.forEach(ring => ring.forEach(p => {
+        if (p[0] < minLng) minLng = p[0];
+        if (p[0] > maxLng) maxLng = p[0];
+        if (p[1] < minLat) minLat = p[1];
+        if (p[1] > maxLat) maxLat = p[1];
+      })));
+    });
+    return [ [minLng, maxLat], [maxLng, minLat] ]; // [top-left, bottom-right]
+  }
+  const chinaBBox = getBBox(CHINA_1351.features);
 
   // Build region styles for states
   const stateRegions = stateFeatures.map(f => {
@@ -391,6 +407,7 @@ function initMap() {
     geo: [{
       id: 'geo-states',
       map: 'states1351',
+      boundingCoords: chinaBBox,
       roam: true,
       center: [112, 32],
       zoom: 4.5,
@@ -405,6 +422,7 @@ function initMap() {
     {
       id: 'geo-prov',
       map: 'prov1351',
+      boundingCoords: chinaBBox,
       roam: false, // synced via geoIndex
       animation: false,
       animationDurationUpdate: 0,
