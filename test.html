@@ -206,19 +206,45 @@ let chartInstance = null;
 
 // === CITY / MARKER DATA ===
 const MARKERS = [
-  { name:'Đại Đô',    vi:'Thủ đô Nguyên',    coords:[116.4,39.9],  type:'capital', faction:'yuan' },
-  { name:'Thượng Đô',  vi:'Cung điện mùa hè',  coords:[116.2,42.4],  type:'capital', faction:'yuan' },
-  { name:'Ứng Thiên Phủ', vi:'Nam Kinh tương lai', coords:[118.8,32.1], type:'city', faction:'neutral' },
-  { name:'Hàng Châu',  vi:'TT kinh tế',        coords:[120.2,30.3],  type:'city', faction:'yuan' },
-  { name:'Quảng Châu',  vi:'Cảng thương mại',   coords:[113.3,23.1],  type:'city', faction:'yuan' },
-  { name:'Thành Đô',   vi:'TT Tứ Xuyên',       coords:[104.1,30.7],  type:'city', faction:'yuan' },
-  { name:'Dĩnh Châu',  vi:'Khởi nghĩa Hồng Cân', coords:[115.8,32.9], type:'rebel', faction:'liufutong' },
-  { name:'Kỳ Thủy',    vi:'Từ Thọ Huy xưng đế', coords:[115.3,30.5], type:'rebel', faction:'xushouhui' },
-  { name:'Hào Châu',   vi:'★ Chu Nguyên Chương', coords:[117.6,32.9], type:'rebel', faction:'guozixing' },
-  { name:'Đài Châu',   vi:'Phương Quốc Trân',   coords:[121.4,28.7],  type:'rebel', faction:'fangguozhen' },
-  { name:'Khai Kinh',  vi:'Thủ đô Cao Ly',     coords:[126.6,37.97], type:'capital', faction:'goryeo' },
-  { name:'Kinh Đô',    vi:'Nhật Bản',           coords:[135.8,35.0],  type:'capital', faction:'japan' },
-  { name:'Thăng Long',  vi:'Đại Việt · Trần',    coords:[105.8,21.0],  type:'capital', faction:'daiviet' },
+  // Vương triều / Capitals
+  { name:'Đại Đô',     vi:'Thủ đô Đại Nguyên',     coords:[116.4,39.9],  type:'capital', faction:'yuan' },
+  { name:'Thượng Đô',  vi:'Cung điện mùa hè',      coords:[116.2,42.4],  type:'capital', faction:'yuan' },
+  { name:'Khai Kinh',  vi:'Thủ đô Cao Ly',         coords:[126.6,37.97], type:'capital', faction:'goryeo' },
+  { name:'Kinh Đô',    vi:'Nhật Bản',              coords:[135.8,35.0],  type:'capital', faction:'japan' },
+  { name:'Thăng Long', vi:'Thủ đô Đại Việt',        coords:[105.8,21.0],  type:'capital', faction:'daiviet' },
+  { name:'Đồ Bàn',     vi:'Thủ đô Chiêm Thành',    coords:[109.1,13.9],  type:'capital', faction:'champa' },
+
+  // Các thế lực khởi nghĩa (Nghĩa quân)
+  { name:'Dĩnh Châu',  vi:'Lưu Phúc Thông (Hồng Cân)', coords:[115.8,32.9], type:'rebel', faction:'liufutong' },
+  { name:'Kỳ Thủy',    vi:'Từ Thọ Huy (Thiên Hoàn)',  coords:[115.3,30.5], type:'rebel', faction:'xushouhui' },
+  { name:'Hào Châu',   vi:'Quách Tử Hưng (★ Chu Nguyên Chương)', coords:[117.6,32.9], type:'rebel', faction:'guozixing' },
+  { name:'Đài Châu',   vi:'Phương Quốc Trân',      coords:[121.4,28.7],  type:'rebel', faction:'fangguozhen' },
+  { name:'Cao Bưu',    vi:'Trương Sĩ Thành',       coords:[119.4,32.8],  type:'rebel', faction:'zhangshicheng' },
+  { name:'Từ Châu',    vi:'Lý Nhị (Hồng Cân Phương Bắc)', coords:[117.2,34.2], type:'rebel', faction:'lier' },
+
+  // Hành tỉnh & Thành trì trọng yếu (Cities / Strategic Passes)
+  { name:'Khai Phong', vi:'Biện Lương (Đô cũ nhà Tống)', coords:[114.3,34.8],  type:'city', faction:'yuan' },
+  { name:'Lạc Dương',  vi:'Cố đô Hà Nam',          coords:[112.4,34.6],  type:'city', faction:'yuan' },
+  { name:'Phụng Nguyên',vi:'Tây An (Mạch máu Quan Trung)',coords:[108.9,34.3],  type:'city', faction:'yuan' },
+  { name:'Tập Khánh',  vi:'Nam Kinh (Ứng Thiên Phủ)',coords:[118.8,32.1], type:'city', faction:'yuan' },
+  { name:'Bình Giang', vi:'Trọng trấn Tô Châu',     coords:[120.6,31.3],  type:'city', faction:'yuan' },
+  { name:'Hàng Châu',  vi:'Trung tâm Giang Chiết',  coords:[120.2,30.3],  type:'city', faction:'yuan' },
+  { name:'Tuyền Châu', vi:'Thương cảng quốc tế',    coords:[118.6,24.9],  type:'city', faction:'yuan' },
+  { name:'Quảng Châu', vi:'Cảng sầm uất Lĩnh Nam',  coords:[113.3,23.1],  type:'city', faction:'yuan' },
+  { name:'Vũ Xương',   vi:'Trọng trấn Hồ Quảng',    coords:[114.3,30.6],  type:'city', faction:'yuan' },
+  { name:'Tương Dương',vi:'Pháo đài Kinh Tương',     coords:[112.1,32.0],  type:'city', faction:'yuan' },
+  { name:'Thành Đô',   vi:'Trung tâm Tứ Xuyên',     coords:[104.1,30.7],  type:'city', faction:'yuan' },
+  { name:'Trùng Khánh',vi:'Yết hầu Ba Thục',        coords:[106.5,29.5],  type:'city', faction:'yuan' },
+  { name:'Tế Nam',     vi:'Trung tâm Sơn Đông',     coords:[117.0,36.6],  type:'city', faction:'yuan' },
+  { name:'Đại Đồng',   vi:'Trọng trấn phòng ngự',   coords:[113.3,40.1],  type:'city', faction:'yuan' },
+  
+  // Các cửa ải (Strategic Passes)
+  { name:'Cư Dung Quan',vi:'Cửa ải bảo vệ Đại Đô',   coords:[116.0,40.3],  type:'city', faction:'yuan' },
+  { name:'Đồng Quan',  vi:'Cửa ải vào Quan Trung',   coords:[110.3,34.6],  type:'city', faction:'yuan' },
+
+  // Đại Việt cities
+  { name:'Vân Đồn',    vi:'Thương cảng Đại Việt',   coords:[107.3,20.9],  type:'city', faction:'daiviet' },
+  { name:'Thiên Trường',vi:'Phủ đệ nhà Trần',       coords:[106.2,20.4],  type:'city', faction:'daiviet' }
 ];
 
 // === INIT ===
@@ -349,7 +375,13 @@ function initMap() {
         }
         if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
           const m = MARKERS.find(m => m.name === p.name);
-          if (m) return `<div style="font-size:13px;font-weight:700;color:#FFD700">${m.name}</div><div style="font-size:11px;color:rgba(232,224,212,.7)">${m.vi}</div>`;
+          if (m) {
+            const typeStr = m.type === 'capital' ? '👑 Kinh đô' : (m.type === 'rebel' ? '⚔ Căn cứ Nghĩa Quân' : '🏰 Thành trì / Cửa ải');
+            const color = m.type === 'capital' ? '#FFD700' : (m.type === 'rebel' ? '#FF6347' : '#FFFFFF');
+            return `<div style="font-size:14px;font-weight:700;color:${color}">${m.name}</div>
+                    <div style="font-size:10px;color:rgba(232,224,212,.5);margin-top:2px;margin-bottom:6px">${typeStr}</div>
+                    <div style="font-size:12px;color:rgba(232,224,212,.9)">${m.vi}</div>`;
+          }
         }
         return p.name;
       }
