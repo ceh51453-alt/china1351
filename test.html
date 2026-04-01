@@ -374,6 +374,8 @@ function initMap() {
       id: 'geo-prov',
       map: 'prov1351',
       roam: false, // synced via geoIndex
+      animation: false,
+      animationDurationUpdate: 0,
       center: [112, 32],
       zoom: 4.5,
       scaleLimit: { min:2, max:30 },
@@ -402,13 +404,13 @@ function initMap() {
 
   chartInstance.setOption(option);
 
-  // Sync province geo with state geo on roam
+  // Sync province geo with state geo on roam without animation lag
   chartInstance.on('georoam', (e) => {
     if (e.componentType === 'geo') {
       const stateGeo = chartInstance.getOption().geo[0];
       chartInstance.setOption({
         geo: [{}, { center: stateGeo.center, zoom: stateGeo.zoom }]
-      });
+      }, { replaceMerge: [], transition: { duration: 0 } });
     }
   });
 
