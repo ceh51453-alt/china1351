@@ -350,10 +350,15 @@ function initMap() {
   // Separate features by type
   const stateFeatures = CHINA_1351.features.filter(f => !f.properties.TYPE || f.properties.TYPE === 'rebel');
   const provFeatures = CHINA_1351.features.filter(f => f.properties.TYPE === 'province');
+  
+  // Overlay countries: smaller countries that should render ON TOP of Yuan
+  const OVERLAY_NAMES = ['Cao Ly', 'Goryeo', '高丽', 'Nhật Bản', '日本', 'Japan', 'Đại Việt', '大越', 'Chiêm Thành', '占城', 'Champa', 'Khmer', '吴哥', 'Angkor', 'Tố Khả Thái', '素可泰', 'Sukhothai'];
+  const overlayFeatures = stateFeatures.filter(f => OVERLAY_NAMES.some(n => (f.properties.NAME || '').includes(n)));
 
   // Register maps
   echarts.registerMap('states1351', { type:'FeatureCollection', features: stateFeatures });
   echarts.registerMap('full1351', { type:'FeatureCollection', features: [...stateFeatures, ...provFeatures] });
+  echarts.registerMap('overlay1351', { type:'FeatureCollection', features: overlayFeatures });
 
   // Build region styles for states
   stateRegions = stateFeatures.map(f => {
@@ -398,6 +403,27 @@ function initMap() {
     };
   });
 
+  // Build overlay regions (small countries rendered on top of Yuan)
+  const overlayRegions = overlayFeatures.map(f => {
+    const p = f.properties;
+    const c = p.COLOR || '#555';
+    return {
+      name: p.NAME,
+      itemStyle: {
+        areaColor: c,
+        borderColor: 'rgba(201,169,110,.3)',
+        borderWidth: 0.8,
+      },
+      emphasis: {
+        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2, shadowColor:c, shadowBlur:20 },
+        label: { show:true, color:'#fff', fontSize:13, fontWeight:'bold' }
+      },
+      label: {
+        show: false,
+      }
+    };
+  });
+
   const option = {
     backgroundColor: '#0a0c10',
     tooltip: {
@@ -435,26 +461,47 @@ function initMap() {
       }
     },
 
-    // Main Map Component (handles both states and provinces perfectly in sync)
-    geo: {
-      id: 'geo-main',
-      map: 'full1351', // Default to full map since BOTH states and prov are ON by default in layerState
-      roam: true, // Native drag & zoom on ALL regions seamlessly
-      center: [112, 32],
-      zoom: 4.5,
-      scaleLimit: { min:2, max:30 },
-      aspectScale: 0.85,
-      nameProperty: 'NAME',
-      itemStyle: { opacity: 1, areaColor:'#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
-      emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
-      regions: [...stateRegions, ...provRegions]
-    },
+    // === DUAL GEO LAYERS for correct z-ordering ===
+    // Base layer: large empires (Yuan, Chagatai, Tibet) + provinces + rebels
+    // Overlay layer: small countries (Goryeo, Japan, Dai Viet, Champa, etc.)
+    geo: [
+      {
+        id: 'geo-base',
+        map: 'full1351',
+        roam: true,
+        center: [112, 32],
+        zoom: 4.5,
+        zlevel: 0,
+        scaleLimit: { min:2, max:30 },
+        aspectScale: 0.85,
+        nameProperty: 'NAME',
+        itemStyle: { opacity: 1, areaColor:'#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
+        emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
+        regions: [...stateRegions, ...provRegions]
+      },
+      {
+        id: 'geo-overlay',
+        map: 'overlay1351',
+        roam: true,
+        center: [112, 32],
+        zoom: 4.5,
+        zlevel: 1,
+        z: 10,
+        scaleLimit: { min:2, max:30 },
+        aspectScale: 0.85,
+        nameProperty: 'NAME',
+        itemStyle: { opacity: 0, areaColor:'transparent', borderColor:'transparent', borderWidth:0 },
+        emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
+        regions: overlayRegions,
+        silent: false
+      }
+    ],
 
     series: [
-      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCapData(), zlevel:2 },
-      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCityData(), zlevel:2 },
-      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getRebelData(), zlevel:3 },
-      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:0, data:getRebelRipple(),
+      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:1, data:getCapData(), zlevel:2 },
+      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:1, data:getCityData(), zlevel:2 },
+      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:1, data:getRebelData(), zlevel:3 },
+      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:1, data:getRebelRipple(),
         symbolSize:7, showEffectOn:'render',
         rippleEffect:{brushType:'stroke',scale:4,period:3,color:'#DC143C'},
         itemStyle:{color:'#DC143C',shadowBlur:10,shadowColor:'#DC143C'}, zlevel:2 },
@@ -463,7 +510,22 @@ function initMap() {
 
   chartInstance.setOption(option);
 
-  // Click → info panel
+  // Sync roam (pan/zoom) between base and overlay geo layers
+  let syncing = false;
+  chartInstance.on('georoam', function(params) {
+    if (syncing) return;
+    syncing = true;
+    const targetGeoIndex = params.geoIndex === 0 ? 1 : 0;
+    chartInstance.setOption({
+      geo: [{}, {}].map((_, i) => i === targetGeoIndex ? {
+        center: chartInstance.getOption().geo[params.geoIndex].center,
+        zoom: chartInstance.getOption().geo[params.geoIndex].zoom
+      } : {})
+    });
+    syncing = false;
+  });
+
+  // Click → info panel (works on both geo layers)
   chartInstance.on('click', p => {
     if (p.componentType === 'geo') {
       const f = CHINA_1351.features.find(f => f.properties.NAME === p.name);
