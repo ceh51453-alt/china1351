@@ -283,8 +283,8 @@ function initMap() {
         areaColor: isRebel
           ? { type:'linear', x:0,y:0,x2:1,y2:1, colorStops:[{offset:0,color:c},{offset:1,color:alpha(c,.6)}] }
           : c,
-        borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.12)',
-        borderWidth: isRebel ? 1.5 : 0.5,
+        borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(201,169,110,.2)',
+        borderWidth: isRebel ? 1.5 : 0.8,
         borderType: isRebel ? 'dashed' : 'solid',
         shadowColor: isRebel ? c : 'transparent',
         shadowBlur: isRebel ? 12 : 0,
@@ -309,8 +309,8 @@ function initMap() {
     const p = f.properties;
     return {
       name: p.NAME,
-      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(255,255,255,.25)', borderWidth: 1, borderType: 'dashed' },
-      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.6)', borderWidth:1.5 }, label: { show:true, color:'var(--gold)', fontSize:12 } },
+      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.35)', borderWidth: 1.2, borderType: 'dashed' },
+      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.7)', borderWidth:1.8 }, label: { show:true, color:'var(--gold)', fontSize:12 } },
       label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(255,255,255,.35)', fontSize: 9, fontFamily: 'Inter, sans-serif' }
     };
   });
