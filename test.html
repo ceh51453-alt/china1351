@@ -498,10 +498,10 @@ function initMap() {
     ],
 
     series: [
-      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:1, data:getCapData(), zlevel:2 },
-      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:1, data:getCityData(), zlevel:2 },
-      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:1, data:getRebelData(), zlevel:3 },
-      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:1, data:getRebelRipple(),
+      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCapData(), zlevel:2 },
+      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCityData(), zlevel:2 },
+      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getRebelData(), zlevel:3 },
+      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:0, data:getRebelRipple(),
         symbolSize:7, showEffectOn:'render',
         rippleEffect:{brushType:'stroke',scale:4,period:3,color:'#DC143C'},
         itemStyle:{color:'#DC143C',shadowBlur:10,shadowColor:'#DC143C'}, zlevel:2 },
@@ -525,11 +525,35 @@ function initMap() {
     syncing = false;
   });
 
-  // Click → info panel (works on both geo layers)
+  // Click → info panel (works on both geo layers and markers)
   chartInstance.on('click', p => {
     if (p.componentType === 'geo') {
       const f = CHINA_1351.features.find(f => f.properties.NAME === p.name);
       if (f) showInfo(f.properties);
+    } else if (p.componentType === 'series') {
+      const marker = MARKERS.find(m => m.name === p.name);
+      if (marker) {
+        let markerColor = '#fff';
+        if (marker.faction === 'yuan') markerColor = '#C9A96E';
+        if (marker.faction === 'goryeo') markerColor = '#4682B4';
+        if (marker.faction === 'japan') markerColor = '#CD5C5C';
+        if (marker.faction === 'daiviet') markerColor = '#228B22';
+        if (marker.faction === 'champa') markerColor = '#DAA520';
+        if (marker.faction === 'liufutong') markerColor = '#DC143C';
+        if (marker.faction === 'xushouhui') markerColor = '#FF4500';
+        if (marker.faction === 'guozixing') markerColor = '#FF6347';
+        if (marker.faction === 'fangguozhen') markerColor = '#FF8C00';
+        if (marker.faction === 'zhangshicheng') markerColor = '#8A2BE2';
+        if (marker.faction === 'lier') markerColor = '#B22222';
+        
+        showInfo({
+          NAME_ZH: '', 
+          NAME_VI: marker.name,
+          TYPE: marker.type,
+          DESC: marker.vi,
+          COLOR: markerColor
+        });
+      }
     }
   });
 
@@ -553,7 +577,9 @@ function showInfo(p) {
   const typeEl = document.getElementById('i-type');
   if (p.TYPE === 'rebel') { typeEl.textContent = '⚔ Nghĩa quân'; typeEl.className = 'info-type rebel'; }
   else if (p.TYPE === 'province') { typeEl.textContent = '🗺️ Hành tỉnh Nguyên'; typeEl.className = 'info-type province'; }
-  else { typeEl.textContent = '🏛 Quốc gia'; typeEl.className = 'info-type state'; }
+  else if (p.TYPE === 'city') { typeEl.textContent = '📍 Thành trì'; typeEl.className = 'info-type state'; }
+  else if (p.TYPE === 'capital') { typeEl.textContent = '👑 Thủ đô / Kinh đô'; typeEl.className = 'info-type state'; }
+  else { typeEl.textContent = '🏛 Quốc gia / Lãnh địa'; typeEl.className = 'info-type state'; }
 
   const capR = document.getElementById('i-cap-r');
   const rulerR = document.getElementById('i-ruler-r');
