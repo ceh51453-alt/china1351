@@ -262,27 +262,12 @@ function initMap() {
 
   // Register TWO maps: one for states, one for provinces overlay
   const stateGeo = { type:'FeatureCollection', features: stateFeatures };
-  const provGeo = { type:'FeatureCollection', features: provFeatures };
+  
+  // Inject state features as dummies into provGeo to force identical geographic bounds
+  const provGeo = { type:'FeatureCollection', features: [...provFeatures, ...stateFeatures] };
 
   echarts.registerMap('states1351', stateGeo);
   echarts.registerMap('prov1351', provGeo);
-
-  // Compute bounding box for perfectly aligned multi-geo layers
-  function getBBox(features) {
-    let minLng=180, maxLng=-180, minLat=90, maxLat=-90;
-    features.forEach(f => {
-      if(!f.geometry) return;
-      let polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
-      polys.forEach(poly => poly.forEach(ring => ring.forEach(p => {
-        if (p[0] < minLng) minLng = p[0];
-        if (p[0] > maxLng) maxLng = p[0];
-        if (p[1] < minLat) minLat = p[1];
-        if (p[1] > maxLat) maxLat = p[1];
-      })));
-    });
-    return [ [minLng, maxLat], [maxLng, minLat] ]; // [top-left, bottom-right]
-  }
-  const chinaBBox = getBBox(CHINA_1351.features);
 
   // Build region styles for states
   const stateRegions = stateFeatures.map(f => {
@@ -322,13 +307,14 @@ function initMap() {
     return {
       name: p.NAME,
       itemStyle: {
+        opacity: 1, // override the geo opacity:0
         areaColor: 'transparent',
         borderColor: 'rgba(255,255,255,.25)',
         borderWidth: 1,
         borderType: 'dashed',
       },
       emphasis: {
-        itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.6)', borderWidth:1.5 },
+        itemStyle: { opacity: 1, areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.6)', borderWidth:1.5 },
         label: { show:true, color:'var(--gold)', fontSize:12 }
       },
       label: {
@@ -407,7 +393,6 @@ function initMap() {
     geo: [{
       id: 'geo-states',
       map: 'states1351',
-      boundingCoords: chinaBBox,
       roam: true,
       center: [112, 32],
       zoom: 4.5,
@@ -422,7 +407,6 @@ function initMap() {
     {
       id: 'geo-prov',
       map: 'prov1351',
-      boundingCoords: chinaBBox,
       roam: false, // synced via geoIndex
       animation: false,
       animationDurationUpdate: 0,
@@ -432,12 +416,8 @@ function initMap() {
       aspectScale: 0.85,
       nameProperty: 'NAME',
       zlevel: 1,
-      itemStyle: { areaColor:'transparent', borderColor:'rgba(255,255,255,.2)', borderWidth:1, borderType:'dashed' },
-      emphasis: {
-        label:{show:true,color:'rgba(201,169,110,.8)',fontSize:11},
-        itemStyle:{areaColor:'rgba(201,169,110,.08)',borderColor:'rgba(201,169,110,.5)'}
-      },
-      regions: provRegions,
+      itemStyle: { opacity: 0, borderWidth: 0 }, // Hide all dummy geometry features by default
+      regions: provRegions, // Only styled provinces will be visible
       silent: false,
     }],
 
