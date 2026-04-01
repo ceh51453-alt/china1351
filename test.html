@@ -203,6 +203,8 @@ const IS_LOCAL = location.protocol === 'file:';
 // === LAYER VISIBILITY STATE ===
 const layerState = { states: true, provinces: true, rebels: true, markers: true };
 let chartInstance = null;
+let stateRegions = [];
+let provRegions = [];
 
 // === CITY / MARKER DATA ===
 const MARKERS = [
@@ -247,6 +249,12 @@ const MARKERS = [
   { name:'Thiên Trường',vi:'Phủ đệ nhà Trần',       coords:[106.2,20.4],  type:'city', faction:'daiviet' }
 ];
 
+// Generative helpers for markers
+const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'diamond',symbolSize:11,itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}})) : [];
+const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type==='city').map(m=>({name:m.name,value:[...m.coords,5],symbol:'circle',symbolSize:5,itemStyle:{color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)',borderWidth:1},label:{show:true,formatter:m.name,position:'right',color:'rgba(255,255,255,.4)',fontSize:8,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:1.5}})) : [];
+const getRebelData = () => layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:[...m.coords,8],symbol:'triangle',symbolSize:9,itemStyle:{color:'#DC143C',borderColor:'#FF6347',borderWidth:1},label:{show:true,formatter:m.name,position:'top',color:'#FF6347',fontSize:9,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#000',textBorderWidth:2}})) : [];
+const getRebelRipple = () => layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:m.coords})) : [];
+
 // === INIT ===
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { initMap(); document.getElementById('ld').classList.add('off'); }, 1600);
@@ -260,17 +268,12 @@ function initMap() {
   const stateFeatures = CHINA_1351.features.filter(f => !f.properties.TYPE || f.properties.TYPE === 'rebel');
   const provFeatures = CHINA_1351.features.filter(f => f.properties.TYPE === 'province');
 
-  // Register TWO maps: one for states, one for provinces overlay
-  const stateGeo = { type:'FeatureCollection', features: stateFeatures };
-  
-  // Inject state features as dummies into provGeo to force identical geographic bounds
-  const provGeo = { type:'FeatureCollection', features: [...provFeatures, ...stateFeatures] };
-
-  echarts.registerMap('states1351', stateGeo);
-  echarts.registerMap('prov1351', provGeo);
+  // Register maps
+  echarts.registerMap('states1351', { type:'FeatureCollection', features: stateFeatures });
+  echarts.registerMap('full1351', { type:'FeatureCollection', features: [...stateFeatures, ...provFeatures] });
 
   // Build region styles for states
-  const stateRegions = stateFeatures.map(f => {
+  stateRegions = stateFeatures.map(f => {
     const p = f.properties;
     const c = p.COLOR || '#555';
     const isRebel = p.TYPE === 'rebel';
@@ -302,53 +305,15 @@ function initMap() {
   });
 
   // Build region styles for provinces
-  const provRegions = provFeatures.map(f => {
+  provRegions = provFeatures.map(f => {
     const p = f.properties;
     return {
       name: p.NAME,
-      itemStyle: {
-        opacity: 1, // override the geo opacity:0
-        areaColor: 'transparent',
-        borderColor: 'rgba(255,255,255,.25)',
-        borderWidth: 1,
-        borderType: 'dashed',
-      },
-      emphasis: {
-        itemStyle: { opacity: 1, areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.6)', borderWidth:1.5 },
-        label: { show:true, color:'var(--gold)', fontSize:12 }
-      },
-      label: {
-        show: true,
-        formatter: p.NAME_VI || p.NAME_ZH,
-        color: 'rgba(255,255,255,.35)',
-        fontSize: 9,
-        fontFamily: 'Inter, sans-serif',
-      }
+      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(255,255,255,.25)', borderWidth: 1, borderType: 'dashed' },
+      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.6)', borderWidth:1.5 }, label: { show:true, color:'var(--gold)', fontSize:12 } },
+      label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(255,255,255,.35)', fontSize: 9, fontFamily: 'Inter, sans-serif' }
     };
   });
-
-  // Marker series
-  const capData = MARKERS.filter(m => m.type==='capital').map(m => ({
-    name: m.name, value:[...m.coords,10], symbol:'diamond', symbolSize:11,
-    itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},
-    label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}
-  }));
-
-  const cityData = MARKERS.filter(m => m.type==='city').map(m => ({
-    name: m.name, value:[...m.coords,5], symbol:'circle', symbolSize:5,
-    itemStyle:{color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)',borderWidth:1},
-    label:{show:true,formatter:m.name,position:'right',color:'rgba(255,255,255,.4)',fontSize:8,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:1.5}
-  }));
-
-  const rebelMarkers = MARKERS.filter(m => m.type==='rebel').map(m => ({
-    name: m.name, value:[...m.coords,8], symbol:'triangle', symbolSize:9,
-    itemStyle:{color:'#DC143C',borderColor:'#FF6347',borderWidth:1},
-    label:{show:true,formatter:m.name,position:'top',color:'#FF6347',fontSize:9,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#000',textBorderWidth:2}
-  }));
-
-  const rebelRipple = MARKERS.filter(m => m.type==='rebel').map(m => ({
-    name: m.name, value: m.coords,
-  }));
 
   const option = {
     backgroundColor: '#0a0c10',
@@ -366,9 +331,7 @@ function initMap() {
           const pr = f.properties;
           const isRebel = pr.TYPE === 'rebel';
           const isProv = pr.TYPE === 'province';
-          const badge = isRebel ? '<span style="color:#DC143C">⚔ Nghĩa quân</span>'
-            : isProv ? '<span style="color:#6B9BD2">🗺️ Hành tỉnh</span>'
-            : '<span style="color:#C9A96E">🏛 Vương triều</span>';
+          const badge = isRebel ? '<span style="color:#DC143C">⚔ Nghĩa quân</span>' : isProv ? '<span style="color:#6B9BD2">🗺️ Hành tỉnh</span>' : '<span style="color:#C9A96E">🏛 Vương triều</span>';
           return `<div style="font-size:15px;font-weight:700;color:#C9A96E;margin-bottom:3px">${pr.NAME_VI||pr.NAME_ZH||pr.NAME}</div>
             <div style="font-size:10px;color:rgba(232,224,212,.5);margin-bottom:6px">${pr.NAME}</div>
             ${badge}
@@ -389,43 +352,26 @@ function initMap() {
       }
     },
 
-    // State borders (main geo)
-    geo: [{
-      id: 'geo-states',
-      map: 'states1351',
-      roam: true,
+    // Main Map Component (handles both states and provinces perfectly in sync)
+    geo: {
+      id: 'geo-main',
+      map: 'full1351', // Default to full map since BOTH states and prov are ON by default in layerState
+      roam: true, // Native drag & zoom on ALL regions seamlessly
       center: [112, 32],
       zoom: 4.5,
       scaleLimit: { min:2, max:30 },
       aspectScale: 0.85,
       nameProperty: 'NAME',
-      itemStyle: { areaColor:'#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
+      itemStyle: { opacity: 1, areaColor:'#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
       emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
-      regions: stateRegions,
+      regions: [...stateRegions, ...provRegions]
     },
-    // Province overlay
-    {
-      id: 'geo-prov',
-      map: 'prov1351',
-      roam: false, // synced via geoIndex
-      animation: false,
-      animationDurationUpdate: 0,
-      center: [112, 32],
-      zoom: 4.5,
-      scaleLimit: { min:2, max:30 },
-      aspectScale: 0.85,
-      nameProperty: 'NAME',
-      zlevel: 1,
-      itemStyle: { opacity: 0, borderWidth: 0 }, // Hide all dummy geometry features by default
-      regions: provRegions, // Only styled provinces will be visible
-      silent: false,
-    }],
 
     series: [
-      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:capData, zlevel:2 },
-      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:cityData, zlevel:2 },
-      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:rebelMarkers, zlevel:3 },
-      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:0, data:rebelRipple,
+      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCapData(), zlevel:2 },
+      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCityData(), zlevel:2 },
+      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getRebelData(), zlevel:3 },
+      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:0, data:getRebelRipple(),
         symbolSize:7, showEffectOn:'render',
         rippleEffect:{brushType:'stroke',scale:4,period:3,color:'#DC143C'},
         itemStyle:{color:'#DC143C',shadowBlur:10,shadowColor:'#DC143C'}, zlevel:2 },
@@ -433,16 +379,6 @@ function initMap() {
   };
 
   chartInstance.setOption(option);
-
-  // Sync province geo with state geo on roam without animation lag
-  chartInstance.on('georoam', (e) => {
-    if (e.componentType === 'geo') {
-      const stateGeo = chartInstance.getOption().geo[0];
-      chartInstance.setOption({
-        geo: [{}, { center: stateGeo.center, zoom: stateGeo.zoom }]
-      }, { replaceMerge: [], transition: { duration: 0 } });
-    }
-  });
 
   // Click → info panel
   chartInstance.on('click', p => {
@@ -497,24 +433,28 @@ function toggleLayer(layer) {
 
   if (!chartInstance) return;
 
-  if (layer === 'provinces') {
-    chartInstance.setOption({ geo: [{}, { show: layerState.provinces }] });
-  }
-  if (layer === 'rebels') {
+  if (layer === 'states' || layer === 'provinces') {
     chartInstance.setOption({
-      series: [
-        {},
-        {},
-        { data: layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:[...m.coords,8],symbol:'triangle',symbolSize:9,itemStyle:{color:'#DC143C',borderColor:'#FF6347',borderWidth:1},label:{show:true,formatter:m.name,position:'top',color:'#FF6347',fontSize:9,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#000',textBorderWidth:2}})) : [] },
-        { data: layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:m.coords})) : [] },
-      ]
+      geo: {
+        id: 'geo-main',
+        map: layerState.provinces ? 'full1351' : 'states1351',
+        itemStyle: {
+          opacity: layerState.states ? 1 : 0,
+          borderWidth: layerState.states ? 0.5 : 0
+        },
+        label: { show: layerState.states },
+        regions: layerState.provinces ? [...stateRegions, ...provRegions] : stateRegions
+      }
     });
   }
-  if (layer === 'markers') {
+
+  if (layer === 'rebels' || layer === 'markers') {
     chartInstance.setOption({
       series: [
-        { data: layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'diamond',symbolSize:11,itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}})) : [] },
-        { data: layerState.markers ? MARKERS.filter(m=>m.type==='city').map(m=>({name:m.name,value:[...m.coords,5],symbol:'circle',symbolSize:5,itemStyle:{color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)',borderWidth:1},label:{show:true,formatter:m.name,position:'right',color:'rgba(255,255,255,.4)',fontSize:8,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:1.5}})) : [] },
+        { data: getCapData() },
+        { data: getCityData() },
+        { data: getRebelData() },
+        { data: getRebelRipple() },
       ]
     });
   }
