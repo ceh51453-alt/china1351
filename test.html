@@ -1,819 +1,503 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>东亚政治局势 · 至正十一年 (1351)</title>
-  <meta name="description" content="元末乱世 — 红巾军大起义爆发年 · 交互式历史地图">
+  <title>Bản đồ Đông Á · Chí Chính năm 11 (1351)</title>
+  <meta name="description" content="Cuối thời Nguyên — Hồng Cân quân đại khởi nghĩa · Bản đồ lịch sử tương tác">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0a0c10;--panel:rgba(15,18,25,.92);--card:rgba(22,26,35,.85);
+      --border:rgba(201,169,110,.15);--gold:#c9a96e;--gold-d:rgba(201,169,110,.6);
+      --red:#dc143c;--txt:#e8e0d4;--dim:rgba(232,224,212,.55);
+    }
+    body{background:var(--bg);color:var(--txt);font-family:'Noto Serif',serif;overflow:hidden;height:100vh;width:100vw}
 
-    :root {
-      --bg-deep: #0a0c10;
-      --bg-panel: rgba(15, 18, 25, 0.92);
-      --bg-card: rgba(22, 26, 35, 0.85);
-      --border: rgba(201, 169, 110, 0.15);
-      --gold: #c9a96e;
-      --gold-dim: rgba(201, 169, 110, 0.6);
-      --red: #dc143c;
-      --text: #e8e0d4;
-      --text-dim: rgba(232, 224, 212, 0.55);
-      --yuan-gold: #c9a96e;
-      --rebel-red: #dc143c;
-    }
+    /* HEADER */
+    .hdr{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:linear-gradient(180deg,rgba(10,12,16,.95) 0%,rgba(10,12,16,.7) 80%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .hdr-l{display:flex;align-items:baseline;gap:14px}
+    .hdr h1{font-size:18px;font-weight:700;color:var(--gold);letter-spacing:2px}
+    .badge{font-family:Inter,sans-serif;font-size:10px;font-weight:500;color:var(--dim);background:rgba(201,169,110,.08);border:1px solid var(--border);padding:3px 10px;border-radius:4px;letter-spacing:1px}
+    .hdr-r{display:flex;gap:16px;font-family:Inter,sans-serif;font-size:11px;color:var(--dim)}
+    .hdr-r span{font-weight:500}
+    .hdr-r .c-gold{color:var(--gold)}
+    .hdr-r .c-red{color:var(--red)}
+    .hdr-r .c-blue{color:#6B9BD2}
 
-    body {
-      background: var(--bg-deep);
-      color: var(--text);
-      font-family: 'Noto Serif SC', serif;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
-    }
+    /* MAP */
+    #map{width:100vw;height:100vh}
 
-    /* === HEADER === */
-    .header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 28px;
-      background: linear-gradient(180deg, rgba(10,12,16,0.95) 0%, rgba(10,12,16,0.7) 80%, transparent 100%);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
+    /* LEGEND */
+    .leg{position:fixed;bottom:20px;left:20px;z-index:100;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 18px;min-width:220px;max-height:calc(100vh - 120px);overflow-y:auto;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+    .leg::-webkit-scrollbar{width:3px}
+    .leg::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .leg-t{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase}
+    .leg-s{margin-bottom:8px}
+    .leg-st{font-family:Inter,sans-serif;font-size:8px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;padding-top:6px;border-top:1px solid var(--border)}
+    .leg-s:first-child .leg-st{border-top:0;padding-top:0}
+    .leg-i{display:flex;align-items:center;gap:7px;padding:2.5px 0;cursor:pointer;transition:opacity .2s;font-size:11px}
+    .leg-i:hover{opacity:.7}
+    .dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+    .dot.rebel{border-radius:50%;animation:pulse 2s infinite}
+    .dot.prov{border-radius:1px;border:1px dashed rgba(255,255,255,.3)}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,20,60,.4)}50%{box-shadow:0 0 0 4px rgba(220,20,60,0)}}
+    .leg-sub{font-family:Inter,sans-serif;font-size:8px;color:var(--dim);display:block}
 
-    .header-left {
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-    }
+    /* INFO PANEL */
+    .info{position:fixed;top:56px;right:20px;z-index:100;width:300px;background:var(--panel);border:1px solid var(--border);border-radius:8px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;opacity:0;transform:translateX(20px);transition:all .3s;pointer-events:none}
+    .info.vis{opacity:1;transform:translateX(0);pointer-events:auto}
+    .info-h{padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+    .info-zh{font-size:18px;font-weight:700;color:var(--gold);letter-spacing:3px;margin-bottom:2px}
+    .info-vi{font-size:13px;color:var(--txt);opacity:.8}
+    .info-type{display:inline-block;font-family:Inter,sans-serif;font-size:9px;font-weight:600;padding:2px 8px;border-radius:3px;margin-top:6px;letter-spacing:1px}
+    .info-type.state{background:rgba(201,169,110,.15);color:var(--gold)}
+    .info-type.rebel{background:rgba(220,20,60,.15);color:#ff6b6b}
+    .info-type.province{background:rgba(107,155,210,.15);color:#6B9BD2}
+    .info-b{padding:12px 16px}
+    .info-r{display:flex;gap:8px;margin-bottom:6px;font-size:12px}
+    .info-l{color:var(--dim);font-family:Inter,sans-serif;font-size:10px;min-width:50px;flex-shrink:0}
+    .info-v{color:var(--txt);line-height:1.5}
+    .info-d{font-size:12px;color:var(--txt);line-height:1.7;padding:12px 16px;border-top:1px solid var(--border);background:rgba(201,169,110,.03)}
+    .info-close{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:4px;transition:all .2s}
+    .info-close:hover{color:var(--txt);background:rgba(255,255,255,.05)}
 
-    .header h1 {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 2px;
-    }
+    /* CONTROLS */
+    .ctrl{position:fixed;top:56px;left:20px;z-index:100;display:flex;flex-direction:column;gap:6px}
+    .ctrl-btn{background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--dim);font-family:Inter,sans-serif;font-size:10px;padding:6px 12px;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);white-space:nowrap;text-align:left}
+    .ctrl-btn:hover{color:var(--gold);border-color:var(--gold-d)}
+    .ctrl-btn.active{color:var(--gold);background:rgba(201,169,110,.1);border-color:var(--gold-d)}
+    .ctrl-btn .icon{margin-right:4px}
 
-    .header .era-badge {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text-dim);
-      background: rgba(201, 169, 110, 0.08);
-      border: 1px solid var(--border);
-      padding: 3px 10px;
-      border-radius: 4px;
-      letter-spacing: 1px;
-    }
+    /* TIMELINE */
+    .tl{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:2px;background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:6px 14px;backdrop-filter:blur(16px)}
+    .tl-y{font-family:Inter,sans-serif;font-size:10px;color:var(--dim);padding:4px 8px;border-radius:3px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .tl-y:hover{color:var(--gold);background:rgba(201,169,110,.08)}
+    .tl-y.on{color:var(--bg);background:var(--gold);font-weight:600}
+    .tl-d{width:1px;height:14px;background:var(--border);margin:0 3px}
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
+    /* LOADING */
+    .ld{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);transition:opacity .6s}
+    .ld.off{opacity:0;pointer-events:none}
+    .ld-t{font-size:26px;font-weight:700;color:var(--gold);letter-spacing:6px;margin-bottom:6px}
+    .ld-s{font-family:Inter,sans-serif;font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:28px}
+    .ld-bar{width:180px;height:2px;background:rgba(201,169,110,.15);border-radius:1px;overflow:hidden}
+    .ld-p{height:100%;background:var(--gold);border-radius:1px;animation:ldp 1.5s ease-out forwards}
+    @keyframes ldp{0%{width:0}60%{width:80%}100%{width:100%}}
 
-    .header-stat {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-    .header-stat span {
-      color: var(--gold);
-      font-weight: 500;
-    }
-
-    /* === MAP CONTAINER === */
-    #map-container {
-      width: 100vw;
-      height: 100vh;
-    }
-
-    /* === LEGEND PANEL === */
-    .legend-panel {
-      position: fixed;
-      bottom: 24px;
-      left: 24px;
-      z-index: 100;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 20px;
-      min-width: 240px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-
-    .legend-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gold);
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-    }
-
-    .legend-section {
-      margin-bottom: 10px;
-    }
-
-    .legend-section-title {
-      font-family: 'Inter', sans-serif;
-      font-size: 9px;
-      font-weight: 500;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 6px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 3px 0;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .legend-item:hover { opacity: 0.7; }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-
-    .legend-dot.rebel {
-      border-radius: 50%;
-      animation: pulse-rebel 2s infinite;
-    }
-
-    @keyframes pulse-rebel {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(220, 20, 60, 0.4); }
-      50% { box-shadow: 0 0 0 4px rgba(220, 20, 60, 0); }
-    }
-
-    .legend-label {
-      font-size: 12px;
-      color: var(--text);
-      line-height: 1.3;
-    }
-
-    .legend-label-sub {
-      font-family: 'Inter', sans-serif;
-      font-size: 9px;
-      color: var(--text-dim);
-      display: block;
-    }
-
-    /* === INFO PANEL (RIGHT) === */
-    .info-panel {
-      position: fixed;
-      top: 60px;
-      right: 24px;
-      z-index: 100;
-      width: 280px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      overflow: hidden;
-      opacity: 0;
-      transform: translateX(20px);
-      transition: all 0.3s ease;
-      pointer-events: none;
-    }
-
-    .info-panel.visible {
-      opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
-    }
-
-    .info-header {
-      padding: 14px 18px 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .info-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--gold);
-      margin-bottom: 2px;
-    }
-
-    .info-name-zh {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 4px;
-    }
-
-    .info-body {
-      padding: 14px 18px;
-    }
-
-    .info-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-
-    .info-label {
-      color: var(--text-dim);
-      font-family: 'Inter', sans-serif;
-      font-size: 10px;
-      min-width: 36px;
-      flex-shrink: 0;
-    }
-
-    .info-value {
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    .info-desc {
-      font-size: 12px;
-      color: var(--text);
-      line-height: 1.7;
-      padding: 12px 18px;
-      border-top: 1px solid var(--border);
-      background: rgba(201, 169, 110, 0.03);
-    }
-
-    /* === TIMELINE BAR (BOTTOM) === */
-    .timeline-bar {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 16px;
-      backdrop-filter: blur(16px);
-    }
-
-    .tl-year {
-      font-family: 'Inter', sans-serif;
-      font-size: 10px;
-      color: var(--text-dim);
-      padding: 4px 8px;
-      border-radius: 3px;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .tl-year:hover { 
-      color: var(--gold); 
-      background: rgba(201,169,110,0.08);
-    }
-    .tl-year.active {
-      color: var(--bg-deep);
-      background: var(--gold);
-      font-weight: 600;
-    }
-
-    .tl-divider {
-      width: 1px;
-      height: 16px;
-      background: var(--border);
-      margin: 0 4px;
-    }
-
-    /* === LOADING === */
-    .loading-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-deep);
-      transition: opacity 0.6s ease;
-    }
-    .loading-screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .loading-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 6px;
-      margin-bottom: 8px;
-    }
-
-    .loading-sub {
-      font-family: 'Inter', sans-serif;
-      font-size: 12px;
-      color: var(--text-dim);
-      letter-spacing: 2px;
-      margin-bottom: 32px;
-    }
-
-    .loading-bar {
-      width: 200px;
-      height: 2px;
-      background: rgba(201,169,110,0.15);
-      border-radius: 1px;
-      overflow: hidden;
-    }
-
-    .loading-progress {
-      height: 100%;
-      background: var(--gold);
-      border-radius: 1px;
-      animation: load-progress 1.5s ease-out forwards;
-    }
-
-    @keyframes load-progress {
-      0% { width: 0%; }
-      60% { width: 80%; }
-      100% { width: 100%; }
-    }
-
-    /* === MARKER LABELS === */
-    .city-marker {
-      position: absolute;
-      pointer-events: none;
-    }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 768px) {
-      .legend-panel { display: none; }
-      .info-panel { 
-        width: 100%; right: 0; top: auto; bottom: 0;
-        border-radius: 12px 12px 0 0;
-      }
-      .timeline-bar { bottom: 12px; }
-      .header h1 { font-size: 16px; }
+    @media(max-width:768px){
+      .leg{display:none}.ctrl{display:none}
+      .info{width:100%;right:0;top:auto;bottom:0;border-radius:12px 12px 0 0;max-height:50vh}
     }
   </style>
 </head>
 <body>
 
-  <!-- LOADING SCREEN -->
-  <div class="loading-screen" id="loading">
-    <div class="loading-title">至正十一年</div>
-    <div class="loading-sub">EAST ASIA · 1351 CE</div>
-    <div class="loading-bar"><div class="loading-progress"></div></div>
+<!-- LOADING -->
+<div class="ld" id="ld">
+  <div class="ld-t">Chí Chính · 1351</div>
+  <div class="ld-s">BẢN ĐỒ LỊCH SỬ ĐÔNG Á</div>
+  <div class="ld-bar"><div class="ld-p"></div></div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-l">
+    <h1>Tình hình Đông Á</h1>
+    <div class="badge">Nguyên · Chí Chính năm 11 · 1351</div>
+  </div>
+  <div class="hdr-r">
+    <div>Thế lực <span class="c-gold" id="s-total">24</span></div>
+    <div>Nghĩa quân <span class="c-red" id="s-rebel">4</span></div>
+    <div>Hành tỉnh <span class="c-blue" id="s-prov">11</span></div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- LAYER CONTROLS -->
+<div class="ctrl">
+  <button class="ctrl-btn active" id="btn-states" onclick="toggleLayer('states')">
+    <span class="icon">🏛️</span> Quốc gia
+  </button>
+  <button class="ctrl-btn active" id="btn-provinces" onclick="toggleLayer('provinces')">
+    <span class="icon">🗺️</span> Hành tỉnh
+  </button>
+  <button class="ctrl-btn active" id="btn-rebels" onclick="toggleLayer('rebels')">
+    <span class="icon">⚔️</span> Nghĩa quân
+  </button>
+  <button class="ctrl-btn active" id="btn-markers" onclick="toggleLayer('markers')">
+    <span class="icon">📍</span> Thành trì
+  </button>
+</div>
+
+<!-- LEGEND -->
+<div class="leg" id="legend">
+  <div class="leg-t">Chú giải</div>
+
+  <div class="leg-s">
+    <div class="leg-st">Quốc gia / Vương triều</div>
+    <div class="leg-i"><div class="dot" style="background:#C9A96E"></div><div>Đại Nguyên<span class="leg-sub">Yuan Dynasty · 元朝</span></div></div>
+    <div class="leg-i"><div class="dot" style="background:#4682B4"></div><div>Cao Ly<span class="leg-sub">Goryeo · 高丽</span></div></div>
+    <div class="leg-i"><div class="dot" style="background:#CD5C5C"></div><div>Nhật Bản<span class="leg-sub">Japan · 南北朝</span></div></div>
+    <div class="leg-i"><div class="dot" style="background:#228B22"></div><div>Đại Việt · Trần triều<span class="leg-sub">Dai Viet · 大越陳朝</span></div></div>
+    <div class="leg-i"><div class="dot" style="background:#DAA520"></div><div>Chiêm Thành<span class="leg-sub">Champa · 占城</span></div></div>
   </div>
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <h1>东亚政治局势</h1>
-      <div class="era-badge">至正十一年 · 1351 CE</div>
-    </div>
-    <div class="header-right">
-      <div class="header-stat">势力 <span id="stat-count">13</span></div>
-      <div class="header-stat">起义军 <span style="color: var(--rebel-red);" id="stat-rebel">4</span></div>
-    </div>
+  <div class="leg-s">
+    <div class="leg-st">Nghĩa quân / Phản Nguyên</div>
+    <div class="leg-i"><div class="dot rebel" style="background:#DC143C"></div><div>Lưu Phúc Thông<span class="leg-sub">Hồng Cân quân · 红巾军</span></div></div>
+    <div class="leg-i"><div class="dot rebel" style="background:#FF4500"></div><div>Từ Thọ Huy<span class="leg-sub">Thiên Hoàn · 天完</span></div></div>
+    <div class="leg-i"><div class="dot rebel" style="background:#FF6347"></div><div>Quách Tử Hưng<span class="leg-sub">Hào Châu · ★ Chu Nguyên Chương</span></div></div>
+    <div class="leg-i"><div class="dot rebel" style="background:#FF8C00"></div><div>Phương Quốc Trân<span class="leg-sub">Hải tặc Chiết Đông</span></div></div>
   </div>
 
-  <!-- MAP -->
-  <div id="map-container"></div>
-
-  <!-- LEGEND -->
-  <div class="legend-panel">
-    <div class="legend-title">图 例</div>
-
-    <div class="legend-section">
-      <div class="legend-section-title">王朝 / 国家</div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background: #C9A96E;"></div>
-        <div class="legend-label">大元<span class="legend-label-sub">Yuan Dynasty</span></div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background: #4682B4;"></div>
-        <div class="legend-label">高丽<span class="legend-label-sub">Goryeo</span></div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background: #CD5C5C;"></div>
-        <div class="legend-label">日本<span class="legend-label-sub">Japan (南北朝)</span></div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background: #228B22;"></div>
-        <div class="legend-label">大越·陈朝<span class="legend-label-sub">Dai Viet</span></div>
-      </div>
-    </div>
-
-    <div class="legend-section">
-      <div class="legend-section-title">起义军 / 叛军</div>
-      <div class="legend-item">
-        <div class="legend-dot rebel" style="background: #DC143C;"></div>
-        <div class="legend-label">红巾军·刘福通<span class="legend-label-sub">Red Turbans</span></div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot rebel" style="background: #FF4500;"></div>
-        <div class="legend-label">天完·徐寿辉<span class="legend-label-sub">Tianwan</span></div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot rebel" style="background: #FF6347;"></div>
-        <div class="legend-label">郭子兴·濠州<span class="legend-label-sub">朱元璋崛起之地</span></div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot rebel" style="background: #FF8C00;"></div>
-        <div class="legend-label">方国珍<span class="legend-label-sub">浙东海盗</span></div>
-      </div>
-    </div>
+  <div class="leg-s">
+    <div class="leg-st">Hành tỉnh Nguyên triều (行省)</div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(201,169,110,.3)"></div><div>Trung Thư tỉnh<span class="leg-sub">中书省 · Kinh đô</span></div></div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(139,125,107,.3)"></div><div>Lĩnh Bắc<span class="leg-sub">岭北 · Mông Cổ</span></div></div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(155,142,126,.3)"></div><div>Liêu Dương<span class="leg-sub">辽阳 · Mãn Châu</span></div></div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(184,149,106,.3)"></div><div>Hà Nam Giang Bắc<span class="leg-sub">河南江北 · ★ Chiến trường chính</span></div></div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(160,128,80,.3)"></div><div>Thiểm Tây<span class="leg-sub">陕西 · Quan Trung</span></div></div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(122,107,82,.3)"></div><div>Vân Nam<span class="leg-sub">云南 · Đất cũ Đại Lý</span></div></div>
+    <div class="leg-i"><div class="dot prov" style="background:rgba(176,160,128,.3)"></div><div>Giang Chiết<span class="leg-sub">江浙 · Giàu nhất</span></div></div>
   </div>
+</div>
 
-  <!-- INFO PANEL -->
-  <div class="info-panel" id="info-panel">
-    <div class="info-header">
-      <div class="info-name-zh" id="info-zh"></div>
-      <div class="info-name" id="info-en"></div>
-    </div>
-    <div class="info-body">
-      <div class="info-row" id="info-capital-row">
-        <div class="info-label">首都</div>
-        <div class="info-value" id="info-capital"></div>
-      </div>
-      <div class="info-row" id="info-ruler-row">
-        <div class="info-label">君主</div>
-        <div class="info-value" id="info-ruler"></div>
-      </div>
-    </div>
-    <div class="info-desc" id="info-desc"></div>
+<!-- INFO PANEL -->
+<div class="info" id="info">
+  <button class="info-close" onclick="closeInfo()">✕</button>
+  <div class="info-h">
+    <div class="info-zh" id="i-zh"></div>
+    <div class="info-vi" id="i-vi"></div>
+    <div class="info-type" id="i-type"></div>
   </div>
-
-  <!-- TIMELINE -->
-  <div class="timeline-bar">
-    <div class="tl-year" data-year="1340">1340</div>
-    <div class="tl-divider"></div>
-    <div class="tl-year" data-year="1348">1348</div>
-    <div class="tl-divider"></div>
-    <div class="tl-year active" data-year="1351">1351</div>
-    <div class="tl-divider"></div>
-    <div class="tl-year" data-year="1356">1356</div>
-    <div class="tl-divider"></div>
-    <div class="tl-year" data-year="1363">1363</div>
-    <div class="tl-divider"></div>
-    <div class="tl-year" data-year="1368">1368</div>
-    <div class="tl-divider"></div>
-    <div class="tl-year" data-year="1402">1402</div>
+  <div class="info-b">
+    <div class="info-r" id="i-cap-r"><div class="info-l">Thủ đô</div><div class="info-v" id="i-cap"></div></div>
+    <div class="info-r" id="i-ruler-r"><div class="info-l">Quân chủ</div><div class="info-v" id="i-ruler"></div></div>
   </div>
+  <div class="info-d" id="i-desc"></div>
+</div>
 
-  <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/ceh51453-alt/china1351@main/china_1351.js"></script>
+<!-- TIMELINE -->
+<div class="tl">
+  <div class="tl-y" data-y="1340">1340</div><div class="tl-d"></div>
+  <div class="tl-y" data-y="1348">1348</div><div class="tl-d"></div>
+  <div class="tl-y on" data-y="1351">1351</div><div class="tl-d"></div>
+  <div class="tl-y" data-y="1356">1356</div><div class="tl-d"></div>
+  <div class="tl-y" data-y="1363">1363</div><div class="tl-d"></div>
+  <div class="tl-y" data-y="1368">1368</div><div class="tl-d"></div>
+  <div class="tl-y" data-y="1402">1402</div>
+</div>
 
-  <script>
-    // === CONSTANTS ===
-    const CAPITALS = [
-      { name: '大都', en: 'Dadu (Beijing)', coords: [116.4, 39.9], type: 'capital', faction: 'yuan' },
-      { name: '上都', en: 'Shangdu (Xanadu)', coords: [116.2, 42.4], type: 'capital', faction: 'yuan' },
-      { name: '应天府', en: 'Nanjing (future Ming)', coords: [118.8, 32.1], type: 'city', faction: 'neutral' },
-      { name: '杭州', en: 'Hangzhou', coords: [120.2, 30.3], type: 'city', faction: 'yuan' },
-      { name: '广州', en: 'Guangzhou', coords: [113.3, 23.1], type: 'city', faction: 'yuan' },
-      { name: '成都', en: 'Chengdu', coords: [104.1, 30.7], type: 'city', faction: 'yuan' },
-      { name: '颍州', en: 'Yingzhou (Fuyang)', coords: [115.8, 32.9], type: 'rebel', faction: 'liufutong' },
-      { name: '蕲水', en: 'Qishui (Xishui)', coords: [115.3, 30.5], type: 'rebel', faction: 'xushouhui' },
-      { name: '濠州', en: 'Haozhou (Fengyang)', coords: [117.6, 32.9], type: 'rebel', faction: 'guozixing' },
-      { name: '台州', en: 'Taizhou', coords: [121.4, 28.7], type: 'rebel', faction: 'fangguozhen' },
-      { name: '开京', en: 'Kaegyeong (Kaesong)', coords: [126.6, 37.97], type: 'capital', faction: 'goryeo' },
-      { name: '京都', en: 'Kyoto', coords: [135.8, 35.0], type: 'capital', faction: 'japan' },
-      { name: '昇龍', en: 'Thang Long (Hanoi)', coords: [105.8, 21.0], type: 'capital', faction: 'daiviet' },
-    ];
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>
+// === Load data locally for dev, CDN for prod ===
+const IS_LOCAL = location.protocol === 'file:';
+</script>
+<script src="china_1351.js"></script>
+<script>
+// === LAYER VISIBILITY STATE ===
+const layerState = { states: true, provinces: true, rebels: true, markers: true };
+let chartInstance = null;
 
-    const COLOR_MAP = {
-      '大元 (Yuan Dynasty)': '#C9A96E',
-      '察合台汗国 (Chagatai Khanate)': '#8B7355',
-      '吐蕃 (Tibet)': '#A0522D',
-      '吴哥王朝 (Khmer Empire)': '#6B8E23',
-      '占城 (Champa)': '#DAA520',
-      '素可泰 (Sukhothai)': '#32CD32',
-      '日本 (Japan)': '#CD5C5C',
-      '高丽 (Goryeo)': '#4682B4',
-      '大越·陈朝 (Dai Viet)': '#228B22',
-      '红巾军·刘福通 (Red Turbans - Liu Futong)': '#DC143C',
-      '天完·徐寿辉 (Tianwan - Xu Shouhui)': '#FF4500',
-      '郭子兴 (Guo Zixing - Haozhou)': '#FF6347',
-      '方国珍 (Fang Guozhen)': '#FF8C00',
+// === CITY / MARKER DATA ===
+const MARKERS = [
+  { name:'Đại Đô',    vi:'Thủ đô Nguyên',    coords:[116.4,39.9],  type:'capital', faction:'yuan' },
+  { name:'Thượng Đô',  vi:'Cung điện mùa hè',  coords:[116.2,42.4],  type:'capital', faction:'yuan' },
+  { name:'Ứng Thiên Phủ', vi:'Nam Kinh tương lai', coords:[118.8,32.1], type:'city', faction:'neutral' },
+  { name:'Hàng Châu',  vi:'TT kinh tế',        coords:[120.2,30.3],  type:'city', faction:'yuan' },
+  { name:'Quảng Châu',  vi:'Cảng thương mại',   coords:[113.3,23.1],  type:'city', faction:'yuan' },
+  { name:'Thành Đô',   vi:'TT Tứ Xuyên',       coords:[104.1,30.7],  type:'city', faction:'yuan' },
+  { name:'Dĩnh Châu',  vi:'Khởi nghĩa Hồng Cân', coords:[115.8,32.9], type:'rebel', faction:'liufutong' },
+  { name:'Kỳ Thủy',    vi:'Từ Thọ Huy xưng đế', coords:[115.3,30.5], type:'rebel', faction:'xushouhui' },
+  { name:'Hào Châu',   vi:'★ Chu Nguyên Chương', coords:[117.6,32.9], type:'rebel', faction:'guozixing' },
+  { name:'Đài Châu',   vi:'Phương Quốc Trân',   coords:[121.4,28.7],  type:'rebel', faction:'fangguozhen' },
+  { name:'Khai Kinh',  vi:'Thủ đô Cao Ly',     coords:[126.6,37.97], type:'capital', faction:'goryeo' },
+  { name:'Kinh Đô',    vi:'Nhật Bản',           coords:[135.8,35.0],  type:'capital', faction:'japan' },
+  { name:'Thăng Long',  vi:'Đại Việt · Trần',    coords:[105.8,21.0],  type:'capital', faction:'daiviet' },
+];
+
+// === INIT ===
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { initMap(); document.getElementById('ld').classList.add('off'); }, 1600);
+});
+
+function initMap() {
+  const el = document.getElementById('map');
+  chartInstance = echarts.init(el, null, { renderer: 'canvas' });
+
+  // Separate features by type
+  const stateFeatures = CHINA_1351.features.filter(f => !f.properties.TYPE || f.properties.TYPE === 'rebel');
+  const provFeatures = CHINA_1351.features.filter(f => f.properties.TYPE === 'province');
+
+  // Register TWO maps: one for states, one for provinces overlay
+  const stateGeo = { type:'FeatureCollection', features: stateFeatures };
+  const provGeo = { type:'FeatureCollection', features: provFeatures };
+  const allGeo = { type:'FeatureCollection', features: CHINA_1351.features };
+
+  echarts.registerMap('states1351', stateGeo);
+  echarts.registerMap('prov1351', provGeo);
+
+  // Build region styles for states
+  const stateRegions = stateFeatures.map(f => {
+    const p = f.properties;
+    const c = p.COLOR || '#555';
+    const isRebel = p.TYPE === 'rebel';
+    return {
+      name: p.NAME,
+      itemStyle: {
+        areaColor: isRebel
+          ? { type:'linear', x:0,y:0,x2:1,y2:1, colorStops:[{offset:0,color:c},{offset:1,color:alpha(c,.6)}] }
+          : c,
+        borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.12)',
+        borderWidth: isRebel ? 1.5 : 0.5,
+        borderType: isRebel ? 'dashed' : 'solid',
+        shadowColor: isRebel ? c : 'transparent',
+        shadowBlur: isRebel ? 12 : 0,
+      },
+      emphasis: {
+        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2, shadowColor:c, shadowBlur:20 },
+        label: { show:true, color:'#fff', fontSize:13, fontWeight:'bold' }
+      },
+      label: {
+        show: !isRebel && p.NAME.includes('Nguyên'),
+        formatter: p.NAME_VI || p.NAME_ZH || '',
+        color: 'rgba(255,255,255,.85)',
+        fontSize: p.NAME.includes('Nguyên') ? 15 : 10,
+        fontFamily: 'Noto Serif, serif',
+        fontWeight: p.NAME.includes('Nguyên') ? 700 : 400,
+      }
     };
+  });
 
-    const REBEL_NAMES = [
-      '红巾军·刘福通 (Red Turbans - Liu Futong)',
-      '天完·徐寿辉 (Tianwan - Xu Shouhui)',
-      '郭子兴 (Guo Zixing - Haozhou)',
-      '方国珍 (Fang Guozhen)',
-    ];
+  // Build region styles for provinces
+  const provRegions = provFeatures.map(f => {
+    const p = f.properties;
+    return {
+      name: p.NAME,
+      itemStyle: {
+        areaColor: 'transparent',
+        borderColor: 'rgba(255,255,255,.25)',
+        borderWidth: 1,
+        borderType: 'dashed',
+      },
+      emphasis: {
+        itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.6)', borderWidth:1.5 },
+        label: { show:true, color:'var(--gold)', fontSize:12 }
+      },
+      label: {
+        show: true,
+        formatter: p.NAME_VI || p.NAME_ZH,
+        color: 'rgba(255,255,255,.35)',
+        fontSize: 9,
+        fontFamily: 'Inter, sans-serif',
+      }
+    };
+  });
 
-    // === INIT ===
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        initMap();
-        document.getElementById('loading').classList.add('hidden');
-      }, 1600);
+  // Marker series
+  const capData = MARKERS.filter(m => m.type==='capital').map(m => ({
+    name: m.name, value:[...m.coords,10], symbol:'diamond', symbolSize:11,
+    itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},
+    label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}
+  }));
+
+  const cityData = MARKERS.filter(m => m.type==='city').map(m => ({
+    name: m.name, value:[...m.coords,5], symbol:'circle', symbolSize:5,
+    itemStyle:{color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)',borderWidth:1},
+    label:{show:true,formatter:m.name,position:'right',color:'rgba(255,255,255,.4)',fontSize:8,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:1.5}
+  }));
+
+  const rebelMarkers = MARKERS.filter(m => m.type==='rebel').map(m => ({
+    name: m.name, value:[...m.coords,8], symbol:'triangle', symbolSize:9,
+    itemStyle:{color:'#DC143C',borderColor:'#FF6347',borderWidth:1},
+    label:{show:true,formatter:m.name,position:'top',color:'#FF6347',fontSize:9,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#000',textBorderWidth:2}
+  }));
+
+  const rebelRipple = MARKERS.filter(m => m.type==='rebel').map(m => ({
+    name: m.name, value: m.coords,
+  }));
+
+  const option = {
+    backgroundColor: '#0a0c10',
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(15,18,25,.95)',
+      borderColor: 'rgba(201,169,110,.3)',
+      borderWidth: 1,
+      padding: [12,16],
+      textStyle: { color:'#e8e0d4', fontFamily:'Noto Serif, serif', fontSize:12 },
+      formatter: p => {
+        if (p.seriesType === 'map') {
+          const f = CHINA_1351.features.find(f => f.properties.NAME === p.name);
+          if (!f) return p.name;
+          const pr = f.properties;
+          const isRebel = pr.TYPE === 'rebel';
+          const isProv = pr.TYPE === 'province';
+          const badge = isRebel ? '<span style="color:#DC143C">⚔ Nghĩa quân</span>'
+            : isProv ? '<span style="color:#6B9BD2">🗺️ Hành tỉnh</span>'
+            : '<span style="color:#C9A96E">🏛 Vương triều</span>';
+          return `<div style="font-size:15px;font-weight:700;color:#C9A96E;margin-bottom:3px">${pr.NAME_VI||pr.NAME_ZH||pr.NAME}</div>
+            <div style="font-size:10px;color:rgba(232,224,212,.5);margin-bottom:6px">${pr.NAME}</div>
+            ${badge}
+            ${pr.CAPITAL?`<div style="margin-top:5px;font-size:11px">📍 ${pr.CAPITAL}</div>`:''}
+            <div style="margin-top:6px;font-size:11px;color:rgba(232,224,212,.8);line-height:1.6;max-width:280px">${pr.DESC||''}</div>`;
+        }
+        if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
+          const m = MARKERS.find(m => m.name === p.name);
+          if (m) return `<div style="font-size:13px;font-weight:700;color:#FFD700">${m.name}</div><div style="font-size:11px;color:rgba(232,224,212,.7)">${m.vi}</div>`;
+        }
+        return p.name;
+      }
+    },
+
+    // State borders (main geo)
+    geo: [{
+      id: 'geo-states',
+      map: 'states1351',
+      roam: true,
+      center: [112, 32],
+      zoom: 4.5,
+      scaleLimit: { min:2, max:30 },
+      aspectScale: 0.85,
+      nameProperty: 'NAME',
+      itemStyle: { areaColor:'#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
+      emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
+      regions: stateRegions,
+    },
+    // Province overlay
+    {
+      id: 'geo-prov',
+      map: 'prov1351',
+      roam: false, // synced via geoIndex
+      center: [112, 32],
+      zoom: 4.5,
+      scaleLimit: { min:2, max:30 },
+      aspectScale: 0.85,
+      nameProperty: 'NAME',
+      zlevel: 1,
+      itemStyle: { areaColor:'transparent', borderColor:'rgba(255,255,255,.2)', borderWidth:1, borderType:'dashed' },
+      emphasis: {
+        label:{show:true,color:'rgba(201,169,110,.8)',fontSize:11},
+        itemStyle:{areaColor:'rgba(201,169,110,.08)',borderColor:'rgba(201,169,110,.5)'}
+      },
+      regions: provRegions,
+      silent: false,
+    }],
+
+    series: [
+      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:capData, zlevel:2 },
+      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:cityData, zlevel:2 },
+      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:rebelMarkers, zlevel:3 },
+      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:0, data:rebelRipple,
+        symbolSize:7, showEffectOn:'render',
+        rippleEffect:{brushType:'stroke',scale:4,period:3,color:'#DC143C'},
+        itemStyle:{color:'#DC143C',shadowBlur:10,shadowColor:'#DC143C'}, zlevel:2 },
+    ]
+  };
+
+  chartInstance.setOption(option);
+
+  // Sync province geo with state geo on roam
+  chartInstance.on('georoam', (e) => {
+    if (e.componentType === 'geo') {
+      const stateGeo = chartInstance.getOption().geo[0];
+      chartInstance.setOption({
+        geo: [{}, { center: stateGeo.center, zoom: stateGeo.zoom }]
+      });
+    }
+  });
+
+  // Click → info panel
+  chartInstance.on('click', p => {
+    if (p.componentType === 'geo') {
+      const f = CHINA_1351.features.find(f => f.properties.NAME === p.name);
+      if (f) showInfo(f.properties);
+    }
+  });
+
+  window.addEventListener('resize', () => chartInstance.resize());
+
+  // Stats
+  const total = CHINA_1351.features.length;
+  const rebels = CHINA_1351.features.filter(f => f.properties.TYPE==='rebel').length;
+  const provs = CHINA_1351.features.filter(f => f.properties.TYPE==='province').length;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-rebel').textContent = rebels;
+  document.getElementById('s-prov').textContent = provs;
+}
+
+// === INFO PANEL ===
+function showInfo(p) {
+  const panel = document.getElementById('info');
+  document.getElementById('i-zh').textContent = p.NAME_ZH || '';
+  document.getElementById('i-vi').textContent = p.NAME_VI || p.NAME || '';
+
+  const typeEl = document.getElementById('i-type');
+  if (p.TYPE === 'rebel') { typeEl.textContent = '⚔ Nghĩa quân'; typeEl.className = 'info-type rebel'; }
+  else if (p.TYPE === 'province') { typeEl.textContent = '🗺️ Hành tỉnh Nguyên'; typeEl.className = 'info-type province'; }
+  else { typeEl.textContent = '🏛 Quốc gia'; typeEl.className = 'info-type state'; }
+
+  const capR = document.getElementById('i-cap-r');
+  const rulerR = document.getElementById('i-ruler-r');
+  capR.style.display = p.CAPITAL ? 'flex' : 'none';
+  rulerR.style.display = p.RULER ? 'flex' : 'none';
+  if (p.CAPITAL) document.getElementById('i-cap').textContent = p.CAPITAL;
+  if (p.RULER) document.getElementById('i-ruler').textContent = p.RULER;
+
+  document.getElementById('i-desc').textContent = p.DESC || '';
+
+  panel.querySelector('.info-h').style.borderLeft = `3px solid ${p.COLOR||'#C9A96E'}`;
+  panel.classList.add('vis');
+}
+
+function closeInfo() { document.getElementById('info').classList.remove('vis'); }
+
+// === LAYER TOGGLE ===
+function toggleLayer(layer) {
+  layerState[layer] = !layerState[layer];
+  const btn = document.getElementById('btn-' + layer);
+  btn.classList.toggle('active', layerState[layer]);
+
+  if (!chartInstance) return;
+
+  if (layer === 'provinces') {
+    chartInstance.setOption({ geo: [{}, { show: layerState.provinces }] });
+  }
+  if (layer === 'rebels') {
+    chartInstance.setOption({
+      series: [
+        {},
+        {},
+        { data: layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:[...m.coords,8],symbol:'triangle',symbolSize:9,itemStyle:{color:'#DC143C',borderColor:'#FF6347',borderWidth:1},label:{show:true,formatter:m.name,position:'top',color:'#FF6347',fontSize:9,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#000',textBorderWidth:2}})) : [] },
+        { data: layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:m.coords})) : [] },
+      ]
     });
+  }
+  if (layer === 'markers') {
+    chartInstance.setOption({
+      series: [
+        { data: layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'diamond',symbolSize:11,itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}})) : [] },
+        { data: layerState.markers ? MARKERS.filter(m=>m.type==='city').map(m=>({name:m.name,value:[...m.coords,5],symbol:'circle',symbolSize:5,itemStyle:{color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)',borderWidth:1},label:{show:true,formatter:m.name,position:'right',color:'rgba(255,255,255,.4)',fontSize:8,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:1.5}})) : [] },
+      ]
+    });
+  }
+}
 
-    function initMap() {
-      const container = document.getElementById('map-container');
-      const chart = echarts.init(container, null, { renderer: 'canvas' });
-
-      // Register GeoJSON map
-      echarts.registerMap('china1351', CHINA_1351);
-
-      // Build visualMap pieces from features
-      const pieces = CHINA_1351.features.map(f => {
-        const name = f.properties.NAME;
-        const color = f.properties.COLOR || COLOR_MAP[name] || '#555';
-        return { value: name, label: f.properties.NAME_ZH || name, color };
-      });
-
-      // Build region styles
-      const regions = CHINA_1351.features.map(f => {
-        const name = f.properties.NAME;
-        const color = f.properties.COLOR || COLOR_MAP[name] || '#555';
-        const isRebel = f.properties.TYPE === 'rebel';
-
-        return {
-          name,
-          itemStyle: {
-            areaColor: isRebel
-              ? { type: 'linear', x: 0, y: 0, x2: 1, y2: 1,
-                  colorStops: [
-                    { offset: 0, color: color },
-                    { offset: 1, color: adjustAlpha(color, 0.6) }
-                  ]}
-              : color,
-            borderColor: isRebel ? '#fff' : 'rgba(255,255,255,0.15)',
-            borderWidth: isRebel ? 1.5 : 0.5,
-            borderType: isRebel ? 'dashed' : 'solid',
-            shadowColor: isRebel ? color : 'transparent',
-            shadowBlur: isRebel ? 12 : 0,
-          },
-          emphasis: {
-            itemStyle: {
-              areaColor: lighten(color, 30),
-              borderColor: '#fff',
-              borderWidth: 2,
-              shadowColor: color,
-              shadowBlur: 20,
-            },
-            label: { show: true, color: '#fff', fontSize: 14, fontWeight: 'bold' }
-          },
-          label: {
-            show: !isRebel,
-            formatter: f.properties.NAME_ZH || '',
-            color: 'rgba(255,255,255,0.85)',
-            fontSize: name.includes('Yuan') ? 16 : 11,
-            fontFamily: 'Noto Serif SC, serif',
-            fontWeight: name.includes('Yuan') ? 700 : 400,
-          }
-        };
-      });
-
-      // Capital markers
-      const capitalData = CAPITALS.filter(c => c.type === 'capital').map(c => ({
-        name: c.name,
-        value: [...c.coords, 10],
-        symbol: 'diamond',
-        symbolSize: 12,
-        itemStyle: { color: '#FFD700', borderColor: '#fff', borderWidth: 1.5 },
-        label: {
-          show: true,
-          formatter: c.name,
-          position: 'right',
-          color: '#FFD700',
-          fontSize: 11,
-          fontFamily: 'Noto Serif SC',
-          textBorderColor: '#000',
-          textBorderWidth: 2,
-        }
-      }));
-
-      // City markers
-      const cityData = CAPITALS.filter(c => c.type === 'city').map(c => ({
-        name: c.name,
-        value: [...c.coords, 5],
-        symbol: 'circle',
-        symbolSize: 6,
-        itemStyle: { color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1 },
-        label: {
-          show: true,
-          formatter: c.name,
-          position: 'right',
-          color: 'rgba(255,255,255,0.5)',
-          fontSize: 9,
-          fontFamily: 'Noto Serif SC',
-          textBorderColor: '#000',
-          textBorderWidth: 1.5,
-        }
-      }));
-
-      // Rebel base markers (with pulse effect)
-      const rebelData = CAPITALS.filter(c => c.type === 'rebel').map(c => ({
-        name: c.name,
-        value: [...c.coords, 8],
-        symbol: 'triangle',
-        symbolSize: 10,
-        itemStyle: { color: '#DC143C', borderColor: '#FF6347', borderWidth: 1 },
-        label: {
-          show: true,
-          formatter: c.name,
-          position: 'top',
-          color: '#FF6347',
-          fontSize: 10,
-          fontFamily: 'Noto Serif SC',
-          fontWeight: 'bold',
-          textBorderColor: '#000',
-          textBorderWidth: 2,
-        }
-      }));
-
-      // Rebel pulse ripple effect
-      const rebelRipple = CAPITALS.filter(c => c.type === 'rebel').map(c => ({
-        name: c.name,
-        value: c.coords,
-      }));
-
-      const option = {
-        backgroundColor: '#0a0c10',
-        tooltip: {
-          trigger: 'item',
-          backgroundColor: 'rgba(15, 18, 25, 0.95)',
-          borderColor: 'rgba(201, 169, 110, 0.3)',
-          borderWidth: 1,
-          padding: [12, 16],
-          textStyle: {
-            color: '#e8e0d4',
-            fontFamily: 'Noto Serif SC, serif',
-            fontSize: 13,
-          },
-          formatter: params => {
-            if (params.seriesType === 'map') {
-              const f = CHINA_1351.features.find(f => f.properties.NAME === params.name);
-              if (!f) return params.name;
-              const p = f.properties;
-              const badge = p.TYPE === 'rebel'
-                ? '<span style="color:#DC143C;">⚔ 起义军</span>'
-                : '<span style="color:#C9A96E;">🏛 王朝</span>';
-              return `
-                <div style="font-size:16px;font-weight:700;color:#C9A96E;margin-bottom:4px;">${p.NAME_ZH || p.NAME}</div>
-                <div style="font-size:11px;color:rgba(232,224,212,0.5);margin-bottom:8px;">${p.NAME}</div>
-                ${badge}
-                ${p.CAPITAL ? `<div style="margin-top:6px;font-size:12px;">📍 ${p.CAPITAL}</div>` : ''}
-                <div style="margin-top:8px;font-size:12px;color:rgba(232,224,212,0.8);line-height:1.6;max-width:280px;">${p.DESC || ''}</div>
-              `;
-            }
-            return params.name;
-          }
-        },
-
-        geo: {
-          map: 'china1351',
-          roam: true,
-          center: [112, 32],
-          zoom: 4.5,
-          scaleLimit: { min: 2, max: 30 },
-          aspectScale: 0.85,
-          nameProperty: 'NAME',
-          itemStyle: {
-            areaColor: '#1a1f2e',
-            borderColor: 'rgba(255,255,255,0.12)',
-            borderWidth: 0.5,
-          },
-          emphasis: {
-            label: { show: true, color: '#fff' },
-            itemStyle: { areaColor: '#2a3040' }
-          },
-          regions,
-          silent: false,
-        },
-
-        series: [
-          // Capitals
-          {
-            type: 'scatter',
-            coordinateSystem: 'geo',
-            data: capitalData,
-            zlevel: 2,
-          },
-          // Cities
-          {
-            type: 'scatter',
-            coordinateSystem: 'geo',
-            data: cityData,
-            zlevel: 2,
-          },
-          // Rebel bases
-          {
-            type: 'scatter',
-            coordinateSystem: 'geo',
-            data: rebelData,
-            zlevel: 3,
-          },
-          // Rebel ripple effect
-          {
-            type: 'effectScatter',
-            coordinateSystem: 'geo',
-            data: rebelRipple,
-            symbolSize: 8,
-            showEffectOn: 'render',
-            rippleEffect: {
-              brushType: 'stroke',
-              scale: 4,
-              period: 3,
-              color: '#DC143C',
-            },
-            itemStyle: { color: '#DC143C', shadowBlur: 10, shadowColor: '#DC143C' },
-            zlevel: 2,
-          },
-        ]
-      };
-
-      chart.setOption(option);
-
-      // Click event → show info panel
-      chart.on('click', params => {
-        if (params.componentType === 'geo') {
-          const f = CHINA_1351.features.find(f => f.properties.NAME === params.name);
-          if (f) showInfoPanel(f.properties);
-        }
-      });
-
-      // Close info panel on map drag
-      chart.on('georoam', () => {
-        document.getElementById('info-panel').classList.remove('visible');
-      });
-
-      // Resize
-      window.addEventListener('resize', () => chart.resize());
-
-      // Update stats
-      const total = CHINA_1351.features.length;
-      const rebels = CHINA_1351.features.filter(f => f.properties.TYPE === 'rebel').length;
-      document.getElementById('stat-count').textContent = total;
-      document.getElementById('stat-rebel').textContent = rebels;
-    }
-
-    // === INFO PANEL ===
-    function showInfoPanel(props) {
-      const panel = document.getElementById('info-panel');
-      document.getElementById('info-zh').textContent = props.NAME_ZH || '';
-      document.getElementById('info-en').textContent = props.NAME || '';
-
-      const capitalRow = document.getElementById('info-capital-row');
-      const rulerRow = document.getElementById('info-ruler-row');
-
-      if (props.CAPITAL) {
-        capitalRow.style.display = 'flex';
-        document.getElementById('info-capital').textContent = props.CAPITAL;
-      } else {
-        capitalRow.style.display = 'none';
-      }
-
-      if (props.RULER) {
-        rulerRow.style.display = 'flex';
-        document.getElementById('info-ruler').textContent = props.RULER;
-      } else {
-        rulerRow.style.display = 'none';
-      }
-
-      document.getElementById('info-desc').textContent = props.DESC || '';
-
-      // Color-code header
-      const header = panel.querySelector('.info-header');
-      const color = props.COLOR || '#C9A96E';
-      header.style.borderLeft = `3px solid ${color}`;
-
-      panel.classList.add('visible');
-    }
-
-    // === UTILS ===
-    function adjustAlpha(hex, alpha) {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `rgba(${r},${g},${b},${alpha})`;
-    }
-
-    function lighten(hex, pct) {
-      let r = parseInt(hex.slice(1, 3), 16);
-      let g = parseInt(hex.slice(3, 5), 16);
-      let b = parseInt(hex.slice(5, 7), 16);
-      r = Math.min(255, r + pct);
-      g = Math.min(255, g + pct);
-      b = Math.min(255, b + pct);
-      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    }
-  </script>
+// === UTILS ===
+function alpha(hex, a) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function lighten(hex, n) {
+  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  r=Math.min(255,r+n); g=Math.min(255,g+n); b=Math.min(255,b+n);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+</script>
 </body>
 </html>
