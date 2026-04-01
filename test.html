@@ -31,7 +31,7 @@
     #map{width:100vw;height:100vh}
 
     /* LEGEND */
-    .leg{position:fixed;bottom:20px;left:20px;z-index:100;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 18px;min-width:220px;max-height:calc(100vh - 120px);overflow-y:auto;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+    .leg{position:fixed;bottom:20px;left:20px;z-index:100;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 18px;min-width:220px;max-height:calc(100vh - 130px);overflow-y:auto;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
     .leg::-webkit-scrollbar{width:3px}
     .leg::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
     .leg-t{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase}
@@ -65,7 +65,7 @@
     .info-close:hover{color:var(--txt);background:rgba(255,255,255,.05)}
 
     /* CONTROLS */
-    .ctrl{position:fixed;top:56px;left:20px;z-index:100;display:flex;flex-direction:column;gap:6px}
+    .ctrl{position:fixed;top:56px;left:20px;z-index:100;display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;max-width:calc(100vw - 350px)}
     .ctrl-btn{background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--dim);font-family:Inter,sans-serif;font-size:10px;padding:6px 12px;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);white-space:nowrap;text-align:left}
     .ctrl-btn:hover{color:var(--gold);border-color:var(--gold-d)}
     .ctrl-btn.active{color:var(--gold);background:rgba(201,169,110,.1);border-color:var(--gold-d)}
