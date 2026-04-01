@@ -208,46 +208,96 @@ let provRegions = [];
 
 // === CITY / MARKER DATA ===
 const MARKERS = [
-  // Vương triều / Capitals
-  { name:'Đại Đô',     vi:'Thủ đô Đại Nguyên',     coords:[116.4,39.9],  type:'capital', faction:'yuan' },
-  { name:'Thượng Đô',  vi:'Cung điện mùa hè',      coords:[116.2,42.4],  type:'capital', faction:'yuan' },
-  { name:'Khai Kinh',  vi:'Thủ đô Cao Ly',         coords:[126.6,37.97], type:'capital', faction:'goryeo' },
-  { name:'Kinh Đô',    vi:'Nhật Bản',              coords:[135.8,35.0],  type:'capital', faction:'japan' },
-  { name:'Thăng Long', vi:'Thủ đô Đại Việt',        coords:[105.8,21.0],  type:'capital', faction:'daiviet' },
-  { name:'Đồ Bàn',     vi:'Thủ đô Chiêm Thành',    coords:[109.1,13.9],  type:'capital', faction:'champa' },
+  // ═══ Vương triều / Thủ đô ═══
+  { name:'Đại Đô',     vi:'Thủ đô Đại Nguyên (Bắc Kinh)',   coords:[116.4,39.9],  type:'capital', faction:'yuan' },
+  { name:'Thượng Đô',  vi:'Cung điện mùa hè Nguyên triều',  coords:[116.2,42.4],  type:'capital', faction:'yuan' },
+  { name:'Khai Kinh',  vi:'Thủ đô Cao Ly (Kaesong)',         coords:[126.6,37.97], type:'capital', faction:'goryeo' },
+  { name:'Kinh Đô',    vi:'Nhật Bản (Kyoto)',                coords:[135.8,35.0],  type:'capital', faction:'japan' },
+  { name:'Thăng Long', vi:'Thủ đô Đại Việt (Hà Nội)',        coords:[105.8,21.0],  type:'capital', faction:'daiviet' },
+  { name:'Đồ Bàn',     vi:'Thủ đô Chiêm Thành (Vijaya)',    coords:[109.1,13.9],  type:'capital', faction:'champa' },
+  { name:'Hòa Lâm',    vi:'Cố đô Mông Cổ (Karakorum)',      coords:[102.8,47.2],  type:'capital', faction:'yuan' },
 
-  // Các thế lực khởi nghĩa (Nghĩa quân)
-  { name:'Dĩnh Châu',  vi:'Lưu Phúc Thông (Hồng Cân)', coords:[115.8,32.9], type:'rebel', faction:'liufutong' },
-  { name:'Kỳ Thủy',    vi:'Từ Thọ Huy (Thiên Hoàn)',  coords:[115.3,30.5], type:'rebel', faction:'xushouhui' },
-  { name:'Hào Châu',   vi:'Quách Tử Hưng (★ Chu Nguyên Chương)', coords:[117.6,32.9], type:'rebel', faction:'guozixing' },
-  { name:'Đài Châu',   vi:'Phương Quốc Trân',      coords:[121.4,28.7],  type:'rebel', faction:'fangguozhen' },
-  { name:'Cao Bưu',    vi:'Trương Sĩ Thành',       coords:[119.4,32.8],  type:'rebel', faction:'zhangshicheng' },
-  { name:'Từ Châu',    vi:'Lý Nhị (Hồng Cân Phương Bắc)', coords:[117.2,34.2], type:'rebel', faction:'lier' },
+  // ═══ Các thế lực khởi nghĩa ═══
+  { name:'Dĩnh Châu',  vi:'Lưu Phúc Thông khởi nghĩa (Hồng Cân)',  coords:[115.8,32.9], type:'rebel', faction:'liufutong' },
+  { name:'Kỳ Thủy',    vi:'Từ Thọ Huy xưng đế (Thiên Hoàn)',       coords:[115.3,30.5], type:'rebel', faction:'xushouhui' },
+  { name:'Hào Châu',   vi:'Quách Tử Hưng (★ Chu Nguyên Chương)',   coords:[117.6,32.9], type:'rebel', faction:'guozixing' },
+  { name:'Đài Châu',   vi:'Phương Quốc Trân (hải tặc)',            coords:[121.4,28.7], type:'rebel', faction:'fangguozhen' },
+  { name:'Cao Bưu',    vi:'Trương Sĩ Thành khởi nghĩa',           coords:[119.4,32.8], type:'rebel', faction:'zhangshicheng' },
+  { name:'Từ Châu',    vi:'Lý Nhị (Hồng Cân phương Bắc)',         coords:[117.2,34.2], type:'rebel', faction:'lier' },
 
-  // Hành tỉnh & Thành trì trọng yếu (Cities / Strategic Passes)
-  { name:'Khai Phong', vi:'Biện Lương (Đô cũ nhà Tống)', coords:[114.3,34.8],  type:'city', faction:'yuan' },
-  { name:'Lạc Dương',  vi:'Cố đô Hà Nam',          coords:[112.4,34.6],  type:'city', faction:'yuan' },
-  { name:'Phụng Nguyên',vi:'Tây An (Mạch máu Quan Trung)',coords:[108.9,34.3],  type:'city', faction:'yuan' },
-  { name:'Tập Khánh',  vi:'Nam Kinh (Ứng Thiên Phủ)',coords:[118.8,32.1], type:'city', faction:'yuan' },
-  { name:'Bình Giang', vi:'Trọng trấn Tô Châu',     coords:[120.6,31.3],  type:'city', faction:'yuan' },
-  { name:'Hàng Châu',  vi:'Trung tâm Giang Chiết',  coords:[120.2,30.3],  type:'city', faction:'yuan' },
-  { name:'Tuyền Châu', vi:'Thương cảng quốc tế',    coords:[118.6,24.9],  type:'city', faction:'yuan' },
-  { name:'Quảng Châu', vi:'Cảng sầm uất Lĩnh Nam',  coords:[113.3,23.1],  type:'city', faction:'yuan' },
-  { name:'Vũ Xương',   vi:'Trọng trấn Hồ Quảng',    coords:[114.3,30.6],  type:'city', faction:'yuan' },
-  { name:'Tương Dương',vi:'Pháo đài Kinh Tương',     coords:[112.1,32.0],  type:'city', faction:'yuan' },
-  { name:'Thành Đô',   vi:'Trung tâm Tứ Xuyên',     coords:[104.1,30.7],  type:'city', faction:'yuan' },
-  { name:'Trùng Khánh',vi:'Yết hầu Ba Thục',        coords:[106.5,29.5],  type:'city', faction:'yuan' },
-  { name:'Tế Nam',     vi:'Trung tâm Sơn Đông',     coords:[117.0,36.6],  type:'city', faction:'yuan' },
-  { name:'Đại Đồng',   vi:'Trọng trấn phòng ngự',   coords:[113.3,40.1],  type:'city', faction:'yuan' },
-  
-  // Các cửa ải (Strategic Passes)
-  { name:'Cư Dung Quan',vi:'Cửa ải bảo vệ Đại Đô',   coords:[116.0,40.3],  type:'city', faction:'yuan' },
-  { name:'Đồng Quan',  vi:'Cửa ải vào Quan Trung',   coords:[110.3,34.6],  type:'city', faction:'yuan' },
+  // ═══ TRUNG THƯ TỈNH (中书省) ═══
+  { name:'Khai Phong',  vi:'Biện Lương — Đô cũ nhà Tống',          coords:[114.3,34.8],  type:'city', faction:'yuan' },
+  { name:'Lạc Dương',   vi:'Cố đô Hà Nam (13 triều)',              coords:[112.4,34.6],  type:'city', faction:'yuan' },
+  { name:'Tế Nam',      vi:'Trung tâm Sơn Đông',                   coords:[117.0,36.6],  type:'city', faction:'yuan' },
+  { name:'Đại Đồng',    vi:'Trọng trấn phòng ngự phía bắc',        coords:[113.3,40.1],  type:'city', faction:'yuan' },
+  { name:'Thái Nguyên',  vi:'Trấn thủ Sơn Tây',                    coords:[112.5,37.9],  type:'city', faction:'yuan' },
+  { name:'Chân Định',   vi:'Hà Bắc trọng trấn',                   coords:[114.5,38.1],  type:'city', faction:'yuan' },
+  { name:'Đức Châu',    vi:'Vận Hà trọng địa (Sơn Đông)',          coords:[116.3,37.4],  type:'city', faction:'yuan' },
+  { name:'Duyện Châu',  vi:'Sơn Đông tây nam trấn',                coords:[116.6,35.4],  type:'city', faction:'yuan' },
 
-  // Đại Việt cities
-  { name:'Vân Đồn',    vi:'Thương cảng Đại Việt',   coords:[107.3,20.9],  type:'city', faction:'daiviet' },
-  { name:'Thiên Trường',vi:'Phủ đệ nhà Trần',       coords:[106.2,20.4],  type:'city', faction:'daiviet' }
+  // ═══ HÀ NAM GIANG BẮC (河南江北) ═══
+  { name:'Tương Dương', vi:'Pháo đài Kinh Tương bất khả xâm',     coords:[112.1,32.0],  type:'city', faction:'yuan' },
+  { name:'Tập Khánh',   vi:'Nam Kinh (Ứng Thiên Phủ)',             coords:[118.8,32.1],  type:'city', faction:'yuan' },
+  { name:'Lư Châu',     vi:'Hợp Phì — An Huy trọng trấn',          coords:[117.3,31.8],  type:'city', faction:'yuan' },
+  { name:'Hoàng Châu',  vi:'Khu vực Hoàng Cương',                  coords:[114.9,30.4],  type:'city', faction:'yuan' },
+  { name:'An Khánh',    vi:'Trường Giang phòng tuyến',             coords:[117.0,30.5],  type:'city', faction:'yuan' },
+  { name:'Dương Châu',  vi:'Thương cảng Đại Vận Hà',               coords:[119.4,32.4],  type:'city', faction:'yuan' },
+
+  // ═══ THIỂM TÂY (陕西) ═══
+  { name:'Phụng Nguyên', vi:'Tây An — mạch máu Quan Trung',        coords:[108.9,34.3],  type:'city', faction:'yuan' },
+  { name:'Đồng Quan',   vi:'Cửa ải vào Quan Trung',               coords:[110.3,34.6],  type:'city', faction:'yuan' },
+  { name:'Hán Trung',   vi:'Yết hầu Tần-Thục',                    coords:[107.0,33.1],  type:'city', faction:'yuan' },
+  { name:'Diên An',     vi:'Biên ải phía bắc Thiểm Tây',          coords:[109.5,36.6],  type:'city', faction:'yuan' },
+
+  // ═══ CAM TÚC (甘肃) ═══
+  { name:'Cam Châu',    vi:'Trương Dịch — Con đường Tơ lụa',       coords:[100.4,38.9],  type:'city', faction:'yuan' },
+  { name:'Lương Châu',  vi:'Vũ Uy — trọng trấn Hà Tây',            coords:[102.6,37.9],  type:'city', faction:'yuan' },
+  { name:'Lan Châu',    vi:'Hoàng Hà thượng du trọng trấn',        coords:[103.8,36.1],  type:'city', faction:'yuan' },
+  { name:'Đôn Hoàng',   vi:'Cửa ngõ Tây Vực (Mạc Cao)',            coords:[94.7,40.1],   type:'city', faction:'yuan' },
+
+  // ═══ TỨ XUYÊN (四川) ═══
+  { name:'Thành Đô',    vi:'Trung tâm Tứ Xuyên — Thiên Phủ',      coords:[104.1,30.7],  type:'city', faction:'yuan' },
+  { name:'Trùng Khánh', vi:'Yết hầu Ba Thục (Tam Hiệp)',           coords:[106.5,29.5],  type:'city', faction:'yuan' },
+  { name:'Quý Dương',   vi:'Quý Châu trung tâm',                  coords:[106.7,26.6],  type:'city', faction:'yuan' },
+
+  // ═══ VÂN NAM (云南) ═══
+  { name:'Trung Khánh', vi:'Côn Minh — Thủ phủ Vân Nam',           coords:[102.7,25.0],  type:'city', faction:'yuan' },
+  { name:'Đại Lý',      vi:'Cố đô Đại Lý quốc',                   coords:[100.2,25.6],  type:'city', faction:'yuan' },
+
+  // ═══ GIANG CHIẾT (江浙) ═══
+  { name:'Bình Giang',  vi:'Tô Châu — trọng trấn kinh tế',        coords:[120.6,31.3],  type:'city', faction:'yuan' },
+  { name:'Hàng Châu',   vi:'Lâm An cũ — trung tâm Giang Chiết',   coords:[120.2,30.3],  type:'city', faction:'yuan' },
+  { name:'Khánh Nguyên', vi:'Ninh Ba — cảng biển quan trọng',      coords:[121.5,29.9],  type:'city', faction:'yuan' },
+  { name:'Phúc Châu',   vi:'Thủ phủ Phúc Kiến',                   coords:[119.3,26.1],  type:'city', faction:'yuan' },
+  { name:'Tuyền Châu',  vi:'Thương cảng quốc tế (Zayton)',         coords:[118.6,24.9],  type:'city', faction:'yuan' },
+  { name:'Ôn Châu',     vi:'Phương Quốc Trân quấy nhiễu',         coords:[120.7,28.0],  type:'city', faction:'yuan' },
+
+  // ═══ GIANG TÂY (江西) ═══
+  { name:'Long Hưng',   vi:'Nam Xương — Thủ phủ Giang Tây',        coords:[115.9,28.7],  type:'city', faction:'yuan' },
+  { name:'Quảng Châu',  vi:'Cảng sầm uất Lĩnh Nam',               coords:[113.3,23.1],  type:'city', faction:'yuan' },
+  { name:'Triều Châu',  vi:'Đông Quảng cảng biển',                 coords:[116.6,23.7],  type:'city', faction:'yuan' },
+
+  // ═══ HỒ QUẢNG (湖广) ═══
+  { name:'Vũ Xương',    vi:'Trọng trấn Hồ Quảng (Vũ Hán)',        coords:[114.3,30.6],  type:'city', faction:'yuan' },
+  { name:'Trường Sa',   vi:'Hồ Nam trung tâm',                    coords:[112.9,28.2],  type:'city', faction:'yuan' },
+  { name:'Quế Lâm',     vi:'Quảng Tây trọng trấn',                coords:[110.3,25.3],  type:'city', faction:'yuan' },
+
+  // ═══ LIÊU DƯƠNG (辽阳) ═══
+  { name:'Liêu Dương',  vi:'Tỉnh lị Liêu Dương hành tỉnh',       coords:[123.2,41.3],  type:'city', faction:'yuan' },
+  { name:'Thẩm Dương',  vi:'Mãn Châu trung tâm',                  coords:[123.4,41.8],  type:'city', faction:'yuan' },
+
+  // ═══ CỬA ẢI CHIẾN LƯỢC ═══
+  { name:'Cư Dung Quan', vi:'Cửa ải bảo vệ Đại Đô',              coords:[116.0,40.3],  type:'city', faction:'yuan' },
+  { name:'Nhạn Môn Quan', vi:'Cửa ải Sơn Tây phòng bắc',         coords:[112.5,39.2],  type:'city', faction:'yuan' },
+  { name:'Gia Dụ Quan',  vi:'Cửa ải cuối Trường Thành (Tây)',     coords:[98.2,39.8],   type:'city', faction:'yuan' },
+
+  // ═══ ĐẠI VIỆT ═══
+  { name:'Vân Đồn',     vi:'Thương cảng Đại Việt',                coords:[107.3,20.9],  type:'city', faction:'daiviet' },
+  { name:'Thiên Trường', vi:'Phủ đệ nhà Trần',                    coords:[106.2,20.4],  type:'city', faction:'daiviet' },
+  { name:'Tây Đô',      vi:'Thanh Hóa — phòng tuyến phía nam',   coords:[105.8,19.8],  type:'city', faction:'daiviet' },
+  { name:'Hóa Châu',    vi:'Thuận Hóa — biên giới Chiêm Thành',  coords:[107.6,16.5],  type:'city', faction:'daiviet' }
 ];
+
 
 // Generative helpers for markers
 const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'diamond',symbolSize:11,itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}})) : [];
