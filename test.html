@@ -637,7 +637,7 @@ function initMap() {
     ]
   };
 
-  chartInstance.setOption(option);
+  chartInstance.setOption(option, true);
 
   // Click → info panel (works on both geo layers and markers)
   chartInstance.on('click', p => {
