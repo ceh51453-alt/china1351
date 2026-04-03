@@ -542,14 +542,14 @@ function initMap() {
     };
   });
 
-  // Build region styles for provinces
+  // Build region styles for provinces — label only (no borders)
   provRegions = provFeatures.map(f => {
     const p = f.properties;
     return {
       name: p.NAME,
-      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.45)', borderWidth: 1.2, borderType: 'dashed' },
-      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.7)', borderWidth:1.8 }, label: { show:true, color:'#C9A96E', fontSize:12 } },
-      label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(255,255,255,.35)', fontSize: 9, fontFamily: 'Inter, sans-serif' }
+      itemStyle: { areaColor: 'transparent', borderColor: 'transparent', borderWidth: 0 },
+      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.08)' }, label: { show:true, color:'#C9A96E', fontSize:13, fontWeight:'bold' } },
+      label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(201,169,110,.45)', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: 500 }
     };
   });
 
