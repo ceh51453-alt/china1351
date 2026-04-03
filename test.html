@@ -110,7 +110,7 @@
   </div>
   <div class="hdr-r">
     <div>Thế lực <span class="c-gold" id="s-total">24</span></div>
-    <div>Nghĩa quân <span class="c-red" id="s-rebel">4</span></div>
+    <div>Thành trì <span class="c-red" id="s-city">55</span></div>
     <div>Hành tỉnh <span class="c-blue" id="s-prov">11</span></div>
   </div>
 </div>
@@ -126,11 +126,12 @@
   <button class="ctrl-btn active" id="btn-provinces" onclick="toggleLayer('provinces')">
     <span class="icon">🗺️</span> Hành tỉnh
   </button>
-  <button class="ctrl-btn active" id="btn-rebels" onclick="toggleLayer('rebels')">
-    <span class="icon">⚔️</span> Nghĩa quân
-  </button>
+
   <button class="ctrl-btn active" id="btn-markers" onclick="toggleLayer('markers')">
     <span class="icon">📍</span> Thành trì
+  </button>
+  <button class="ctrl-btn active" id="btn-terrain" onclick="toggleLayer('terrain')">
+    <span class="icon">⛰️</span> Địa hình
   </button>
 </div>
 
@@ -147,13 +148,7 @@
     <div class="leg-i"><div class="dot" style="background:#DAA520"></div><div>Chiêm Thành<span class="leg-sub">Champa · 占城</span></div></div>
   </div>
 
-  <div class="leg-s">
-    <div class="leg-st">Nghĩa quân / Phản Nguyên</div>
-    <div class="leg-i"><div class="dot rebel" style="background:#DC143C"></div><div>Lưu Phúc Thông<span class="leg-sub">Hồng Cân quân · 红巾军</span></div></div>
-    <div class="leg-i"><div class="dot rebel" style="background:#FF4500"></div><div>Từ Thọ Huy<span class="leg-sub">Thiên Hoàn · 天完</span></div></div>
-    <div class="leg-i"><div class="dot rebel" style="background:#FF6347"></div><div>Quách Tử Hưng<span class="leg-sub">Hào Châu · ★ Chu Nguyên Chương</span></div></div>
-    <div class="leg-i"><div class="dot rebel" style="background:#FF8C00"></div><div>Phương Quốc Trân<span class="leg-sub">Hải tặc Chiết Đông</span></div></div>
-  </div>
+
 
   <div class="leg-s">
     <div class="leg-st">Hành tỉnh Nguyên triều (行省)</div>
@@ -200,8 +195,87 @@ const IS_LOCAL = location.protocol === 'file:';
 </script>
 <script src="china_1351.js"></script>
 <script>
+// The GeoJSON has already been heavily smoothed topologically in node to prevent province gaps.
+const CHINA_SMOOTH = CHINA_1351;
+
+// === TERRAIN TEXTURE GENERATOR ===
+function createTerrainCanvas(baseColor, type) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  const r = (hex, i) => parseInt(hex.slice(i, i+2), 16);
+  const br = r(baseColor,1), bg = r(baseColor,3), bb = r(baseColor,5);
+
+  // Base fill
+  ctx.fillStyle = baseColor;
+  ctx.fillRect(0, 0, 256, 256);
+
+  // Perlin-like noise via layered circles
+  const rng = (s) => { s = Math.sin(s) * 43758.5453; return s - Math.floor(s); };
+  for (let i = 0; i < 600; i++) {
+    const x = rng(i * 7.3) * 256;
+    const y = rng(i * 13.7 + 5) * 256;
+    const sz = rng(i * 3.1 + 2) * 18 + 4;
+    const v = (rng(i * 11.9 + 3) - 0.5) * 30;
+    const nr = Math.max(0, Math.min(255, br + v));
+    const ng = Math.max(0, Math.min(255, bg + v));
+    const nb = Math.max(0, Math.min(255, bb + v));
+    ctx.fillStyle = `rgba(${nr|0},${ng|0},${nb|0},0.15)`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, sz, sz * 0.7, rng(i)*Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Mountain ridges for highlands
+  if (type === 'mountain' || type === 'plateau') {
+    ctx.strokeStyle = `rgba(${Math.min(255,br+20)},${Math.min(255,bg+15)},${Math.min(255,bb+10)},0.12)`;
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 15; i++) {
+      ctx.beginPath();
+      let x = rng(i * 31) * 256;
+      let y = rng(i * 47 + 10) * 256;
+      ctx.moveTo(x, y);
+      for (let j = 0; j < 6; j++) {
+        x += (rng(i * 17 + j * 7) - 0.3) * 50;
+        y += (rng(i * 23 + j * 11) - 0.5) * 40;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // Subtle gradient overlay for depth
+  const grad = ctx.createRadialGradient(128, 128, 20, 128, 128, 180);
+  grad.addColorStop(0, `rgba(${Math.min(255,br+15)},${Math.min(255,bg+12)},${Math.min(255,bb+8)},0.15)`);
+  grad.addColorStop(1, `rgba(${Math.max(0,br-10)},${Math.max(0,bg-10)},${Math.max(0,bb-8)},0.1)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 256);
+
+  return c;
+}
+
+// Pre-generate terrain canvases per region type
+const TERRAIN_TYPES = {
+  '#C9A96E': 'plains',      // Yuan
+  '#8B7355': 'plateau',     // Chagatai / Sichuan
+  '#A0522D': 'mountain',    // Tibet
+  '#32CD32': 'plains',      // Sukhothai
+  '#4682B4': 'mountain',    // Goryeo
+  '#6B8E23': 'plains',      // Khmer
+  '#CD5C5C': 'mountain',    // Japan
+  '#228B22': 'plains',      // Dai Viet
+  '#DAA520': 'plains',      // Champa
+};
+const terrainCanvasCache = {};
+function getTerrainCanvas(color) {
+  if (!terrainCanvasCache[color]) {
+    terrainCanvasCache[color] = createTerrainCanvas(color, TERRAIN_TYPES[color] || 'plains');
+  }
+  return terrainCanvasCache[color];
+}
+
 // === LAYER VISIBILITY STATE ===
-const layerState = { states: true, provinces: true, rebels: true, markers: true };
+const layerState = { states: true, provinces: true, markers: true, terrain: true };
 let chartInstance = null;
 let stateRegions = [];
 let provRegions = [];
@@ -217,13 +291,13 @@ const MARKERS = [
   { name:'Đồ Bàn',     vi:'Thủ đô Chiêm Thành (Vijaya)',    coords:[109.1,13.9],  type:'capital', faction:'champa' },
   { name:'Hòa Lâm',    vi:'Cố đô Mông Cổ (Karakorum)',      coords:[102.8,47.2],  type:'capital', faction:'yuan' },
 
-  // ═══ Các thế lực khởi nghĩa ═══
-  { name:'Dĩnh Châu',  vi:'Lưu Phúc Thông khởi nghĩa (Hồng Cân)',  coords:[115.8,32.9], type:'rebel', faction:'liufutong' },
-  { name:'Kỳ Thủy',    vi:'Từ Thọ Huy xưng đế (Thiên Hoàn)',       coords:[115.3,30.5], type:'rebel', faction:'xushouhui' },
-  { name:'Hào Châu',   vi:'Quách Tử Hưng (★ Chu Nguyên Chương)',   coords:[117.6,32.9], type:'rebel', faction:'guozixing' },
-  { name:'Đài Châu',   vi:'Phương Quốc Trân (hải tặc)',            coords:[121.4,28.7], type:'rebel', faction:'fangguozhen' },
-  { name:'Cao Bưu',    vi:'Trương Sĩ Thành khởi nghĩa',           coords:[119.4,32.8], type:'rebel', faction:'zhangshicheng' },
-  { name:'Từ Châu',    vi:'Lý Nhị (Hồng Cân phương Bắc)',         coords:[117.2,34.2], type:'rebel', faction:'lier' },
+  // ═══ Trung Thư tỉnh bổ sung ═══
+  { name:'Hà Gian',    vi:'Hà Bắc — trạm dịch Đại Vận Hà',       coords:[116.1,38.4],  type:'city', faction:'yuan' },
+  { name:'Bảo Định',   vi:'Bắc bình nguyên trọng trấn',           coords:[115.5,38.9],  type:'city', faction:'yuan' },
+  { name:'Quảng Bình',  vi:'Hà Bắc tây nam (Vĩnh Niên)',          coords:[114.7,36.6],  type:'city', faction:'yuan' },
+  { name:'Hoài Khánh',  vi:'Hà Nam bắc bộ (Thấm Dương)',          coords:[113.0,35.1],  type:'city', faction:'yuan' },
+  { name:'Bân Châu',    vi:'Sơn Đông bắc bộ duyên hải',           coords:[118.0,37.4],  type:'city', faction:'yuan' },
+  { name:'Ích Đô',      vi:'Thanh Châu — Sơn Đông trung bộ',      coords:[118.5,36.7],  type:'city', faction:'yuan' },
 
   // ═══ TRUNG THƯ TỈNH (中书省) ═══
   { name:'Khai Phong',  vi:'Biện Lương — Đô cũ nhà Tống',          coords:[114.3,34.8],  type:'city', faction:'yuan' },
@@ -294,8 +368,8 @@ const MARKERS = [
   { name:'Võ Quan',      vi:'Cửa ải phòng thủ Kinh Nguyên',       coords:[106.6,35.7],  type:'city', faction:'yuan' },
 
   // ═══ LĨNH BẮC (岭北) — Mông Cổ ═══
-  { name:'Ích Đô',       vi:'Trung tâm Lĩnh Bắc (nay: Ulan Bator)',coords:[106.9,47.9], type:'city', faction:'yuan' },
-  { name:'Xương Châu',   vi:'Trạm dịch Con đường Tơ lụa thảo nguyên',coords:[111.5,44.5],type:'city', faction:'yuan' },
+  { name:'Cáp Lạp Hòa Lâm', vi:'Trung tâm Lĩnh Bắc (nay: Ulan Bator)',coords:[106.9,47.9], type:'city', faction:'yuan' },
+  { name:'Xương Châu',   vi:'Trạm dịch thảo nguyên',               coords:[111.5,44.5], type:'city', faction:'yuan' },
 
   // ═══ GIANG CHIẾT BỔ SUNG ═══
   { name:'Thiệu Hưng',   vi:'Tuyệt Hưng — vùng rượu nổi tiếng',  coords:[120.6,30.0],  type:'city', faction:'yuan' },
@@ -304,6 +378,9 @@ const MARKERS = [
   // ═══ HỒ QUẢNG BỔ SUNG ═══
   { name:'Kinh Châu',     vi:'Yết hầu Kinh-Tương (Giang Lăng)',   coords:[112.2,30.3],  type:'city', faction:'yuan' },
   { name:'Liễu Châu',     vi:'Quảng Tây nội địa',                 coords:[109.4,24.3],  type:'city', faction:'yuan' },
+  { name:'Nam Ninh',      vi:'Ung Châu — Quảng Tây nam bộ',       coords:[108.3,22.8],  type:'city', faction:'yuan' },
+  { name:'Hành Châu',     vi:'Hồ Nam trọng trấn (Hành Dương)',     coords:[112.6,26.9],  type:'city', faction:'yuan' },
+  { name:'Thường Đức',    vi:'Hồ Nam tây bắc',                    coords:[111.7,29.0],  type:'city', faction:'yuan' },
   { name:'Quỳnh Châu',    vi:'Đảo Hải Nam thủ phủ',               coords:[110.4,20.0],  type:'city', faction:'yuan' },
 
   // ═══ CAO LY (高丽) ═══
@@ -325,6 +402,36 @@ const MARKERS = [
   // ═══ CHIÊM THÀNH (占城) ═══
   { name:'Amaravati',    vi:'Quảng Nam — vùng cảng Chiêm Thành',  coords:[108.2,15.5],  type:'city', faction:'champa' },
   { name:'Panduranga',   vi:'Phan Rang — lãnh địa phía nam',      coords:[108.9,11.6],  type:'city', faction:'champa' },
+  { name:'Kauthara',     vi:'Nha Trang — cảng biển Chiêm Thành',  coords:[109.2,12.3],  type:'city', faction:'champa' },
+
+  // ═══ Hà Nam Giang Bắc bổ sung ═══
+  { name:'Quy Đức',      vi:'Thương Khâu — Hà Nam',               coords:[115.6,34.4],  type:'city', faction:'yuan' },
+  { name:'Nhữ Ninh',     vi:'Nhữ Châu — Hà Nam trung bộ',         coords:[112.8,33.7],  type:'city', faction:'yuan' },
+  { name:'Nam Dương',    vi:'Đặng Châu — Hà Nam tây nam',         coords:[112.5,33.0],  type:'city', faction:'yuan' },
+  { name:'Trừ Châu',     vi:'An Huy đông bộ',                     coords:[118.3,32.3],  type:'city', faction:'yuan' },
+  { name:'Hoài An',      vi:'Đại Vận Hà trọng địa',               coords:[119.0,33.5],  type:'city', faction:'yuan' },
+  { name:'Thọ Châu',     vi:'An Huy trung bộ',                    coords:[116.8,32.6],  type:'city', faction:'yuan' },
+
+  // ═══ Cam Túc bổ sung ═══
+  { name:'Túc Châu',     vi:'Tửu Tuyền — Con đường Tơ lụa',       coords:[98.5,39.7],   type:'city', faction:'yuan' },
+  { name:'Tây Ninh',     vi:'Thanh Hải đông bộ (Tây Ninh)',        coords:[101.8,36.6],  type:'city', faction:'yuan' },
+
+  // ═══ Tứ Xuyên bổ sung ═══
+  { name:'Tự Châu',      vi:'Tự Cống — Tứ Xuyên nam bộ',          coords:[104.8,29.3],  type:'city', faction:'yuan' },
+  { name:'Lô Châu',      vi:'Tả Châu — biên giới Quý Châu',       coords:[105.4,28.9],  type:'city', faction:'yuan' },
+  { name:'Miên Châu',    vi:'Tứ Xuyên bắc bộ (Miên Dương)',       coords:[104.7,31.5],  type:'city', faction:'yuan' },
+
+  // ═══ Giang Chiết bổ sung ═══
+  { name:'Hồ Châu',      vi:'Chiết Giang bắc (Hồ Châu)',          coords:[120.1,30.9],  type:'city', faction:'yuan' },
+  { name:'Xử Châu',      vi:'Chiết Giang tây nam (Lệ Thủy)',      coords:[119.9,28.5],  type:'city', faction:'yuan' },
+  { name:'Kiến Đức',     vi:'Chiết Giang tây bắc (Nghiêm Châu)',   coords:[119.3,29.5],  type:'city', faction:'yuan' },
+  { name:'Chương Châu',  vi:'Phúc Kiến nam (Chương Châu)',         coords:[117.6,24.5],  type:'city', faction:'yuan' },
+
+  // ═══ Giang Tây bổ sung ═══
+  { name:'Cát An',       vi:'Giang Tây trung bộ (Cát An)',         coords:[114.9,27.1],  type:'city', faction:'yuan' },
+  { name:'Cám Châu',     vi:'Giang Tây nam bộ biên viễn',         coords:[114.9,25.8],  type:'city', faction:'yuan' },
+  { name:'Thiều Châu',   vi:'Quảng Đông bắc (Thiều Quan)',         coords:[113.6,24.8],  type:'city', faction:'yuan' },
+  { name:'Liêm Châu',    vi:'Quảng Đông tây nam duyên hải',       coords:[109.1,21.5],  type:'city', faction:'yuan' },
 
   // ═══ ĐÔNG NAM Á ═══
   { name:'Angkor',       vi:'Đế quốc Khmer — Angkor Thom',        coords:[103.9,13.4],  type:'city', faction:'khmer' },
@@ -335,8 +442,6 @@ const MARKERS = [
 // Generative helpers for markers
 const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'diamond',symbolSize:11,itemStyle:{color:'#FFD700',borderColor:'#fff',borderWidth:1.5},label:{show:true,formatter:m.name,position:'right',color:'#FFD700',fontSize:10,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:2}})) : [];
 const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type==='city').map(m=>({name:m.name,value:[...m.coords,5],symbol:'circle',symbolSize:5,itemStyle:{color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)',borderWidth:1},label:{show:true,formatter:m.name,position:'right',color:'rgba(255,255,255,.4)',fontSize:8,fontFamily:'Noto Serif',textBorderColor:'#000',textBorderWidth:1.5}})) : [];
-const getRebelData = () => layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:[...m.coords,8],symbol:'triangle',symbolSize:9,itemStyle:{color:'#DC143C',borderColor:'#FF6347',borderWidth:1},label:{show:true,formatter:m.name,position:'top',color:'#FF6347',fontSize:9,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#000',textBorderWidth:2}})) : [];
-const getRebelRipple = () => layerState.rebels ? MARKERS.filter(m=>m.type==='rebel').map(m=>({name:m.name,value:m.coords})) : [];
 
 // === INIT ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -347,15 +452,18 @@ function initMap() {
   const el = document.getElementById('map');
   chartInstance = echarts.init(el, null, { renderer: 'canvas' });
 
+  // Use smoothed GeoJSON for all map data
+  const src = CHINA_SMOOTH;
+
   // Separate features by type
-  const stateFeatures = CHINA_1351.features.filter(f => !f.properties.TYPE || f.properties.TYPE === 'rebel');
-  const provFeatures = CHINA_1351.features.filter(f => f.properties.TYPE === 'province');
+  const stateFeatures = src.features.filter(f => !f.properties.TYPE || (f.properties.TYPE !== 'province' && f.properties.TYPE !== 'rebel'));
+  const provFeatures = src.features.filter(f => f.properties.TYPE === 'province');
   
   // Overlay countries: smaller countries that should render ON TOP of Yuan
   const OVERLAY_NAMES = ['Cao Ly', 'Goryeo', '高丽', 'Nhật Bản', '日本', 'Japan', 'Đại Việt', '大越', 'Chiêm Thành', '占城', 'Champa', 'Khmer', '吴哥', 'Angkor', 'Tố Khả Thái', '素可泰', 'Sukhothai'];
   const overlayFeatures = stateFeatures.filter(f => OVERLAY_NAMES.some(n => (f.properties.NAME || '').includes(n)));
 
-  // Register maps
+  // Register maps with smoothed geometry
   echarts.registerMap('states1351', { type:'FeatureCollection', features: stateFeatures });
   echarts.registerMap('full1351', { type:'FeatureCollection', features: [...stateFeatures, ...provFeatures] });
   echarts.registerMap('overlay1351', { type:'FeatureCollection', features: overlayFeatures });
@@ -365,14 +473,21 @@ function initMap() {
     const p = f.properties;
     const c = p.COLOR || '#555';
     const isRebel = p.TYPE === 'rebel';
+    // Terrain texture or flat fill
+    let areaFill;
+    if (layerState.terrain && !isRebel && c.startsWith('#')) {
+      areaFill = { image: getTerrainCanvas(c), repeat: 'repeat' };
+    } else if (isRebel) {
+      areaFill = { type:'linear', x:0,y:0,x2:1,y2:1, colorStops:[{offset:0,color:c},{offset:1,color:alpha(c,.6)}] };
+    } else {
+      areaFill = c;
+    }
     return {
       name: p.NAME,
       itemStyle: {
-        areaColor: isRebel
-          ? { type:'linear', x:0,y:0,x2:1,y2:1, colorStops:[{offset:0,color:c},{offset:1,color:alpha(c,.6)}] }
-          : c,
-        borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(201,169,110,.2)',
-        borderWidth: isRebel ? 1.5 : 0.8,
+        areaColor: areaFill,
+        borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(201,169,110,.25)',
+        borderWidth: isRebel ? 1.5 : 1,
         borderType: isRebel ? 'dashed' : 'solid',
         shadowColor: isRebel ? c : 'transparent',
         shadowBlur: isRebel ? 12 : 0,
@@ -407,12 +522,16 @@ function initMap() {
   const overlayRegions = overlayFeatures.map(f => {
     const p = f.properties;
     const c = p.COLOR || '#555';
+    let areaFill = c;
+    if (layerState.terrain && c.startsWith('#')) {
+      areaFill = { image: getTerrainCanvas(c), repeat: 'repeat' };
+    }
     return {
       name: p.NAME,
       itemStyle: {
-        areaColor: c,
-        borderColor: 'rgba(201,169,110,.3)',
-        borderWidth: 0.8,
+        areaColor: areaFill,
+        borderColor: 'rgba(201,169,110,.35)',
+        borderWidth: 1,
       },
       emphasis: {
         itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2, shadowColor:c, shadowBlur:20 },
@@ -450,8 +569,8 @@ function initMap() {
         if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
           const m = MARKERS.find(m => m.name === p.name);
           if (m) {
-            const typeStr = m.type === 'capital' ? '👑 Kinh đô' : (m.type === 'rebel' ? '⚔ Căn cứ Nghĩa Quân' : '🏰 Thành trì / Cửa ải');
-            const color = m.type === 'capital' ? '#FFD700' : (m.type === 'rebel' ? '#FF6347' : '#FFFFFF');
+            const typeStr = m.type === 'capital' ? '👑 Kinh đô' : '🏰 Thành trì / Cửa ải';
+            const color = m.type === 'capital' ? '#FFD700' : '#FFFFFF';
             return `<div style="font-size:14px;font-weight:700;color:${color}">${m.name}</div>
                     <div style="font-size:10px;color:rgba(232,224,212,.5);margin-top:2px;margin-bottom:6px">${typeStr}</div>
                     <div style="font-size:12px;color:rgba(232,224,212,.9)">${m.vi}</div>`;
@@ -475,7 +594,7 @@ function initMap() {
         scaleLimit: { min:2, max:30 },
         aspectScale: 0.85,
         nameProperty: 'NAME',
-        itemStyle: { opacity: 1, areaColor:'#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
+        itemStyle: { opacity: 1, areaColor: layerState.terrain ? {image: createTerrainCanvas('#1a1f2e','plains'), repeat:'repeat'} : '#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
         emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
         regions: [...stateRegions, ...provRegions]
       },
@@ -500,11 +619,6 @@ function initMap() {
     series: [
       { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCapData(), zlevel:2 },
       { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCityData(), zlevel:2 },
-      { name:'rebels', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getRebelData(), zlevel:3 },
-      { name:'ripple', type:'effectScatter', coordinateSystem:'geo', geoIndex:0, data:getRebelRipple(),
-        symbolSize:7, showEffectOn:'render',
-        rippleEffect:{brushType:'stroke',scale:4,period:3,color:'#DC143C'},
-        itemStyle:{color:'#DC143C',shadowBlur:10,shadowColor:'#DC143C'}, zlevel:2 },
     ]
   };
 
@@ -539,12 +653,6 @@ function initMap() {
         if (marker.faction === 'japan') markerColor = '#CD5C5C';
         if (marker.faction === 'daiviet') markerColor = '#228B22';
         if (marker.faction === 'champa') markerColor = '#DAA520';
-        if (marker.faction === 'liufutong') markerColor = '#DC143C';
-        if (marker.faction === 'xushouhui') markerColor = '#FF4500';
-        if (marker.faction === 'guozixing') markerColor = '#FF6347';
-        if (marker.faction === 'fangguozhen') markerColor = '#FF8C00';
-        if (marker.faction === 'zhangshicheng') markerColor = '#8A2BE2';
-        if (marker.faction === 'lier') markerColor = '#B22222';
         
         showInfo({
           NAME_ZH: '', 
@@ -561,10 +669,10 @@ function initMap() {
 
   // Stats
   const total = CHINA_1351.features.length;
-  const rebels = CHINA_1351.features.filter(f => f.properties.TYPE==='rebel').length;
+  const cities = MARKERS.filter(m => m.type==='city').length;
   const provs = CHINA_1351.features.filter(f => f.properties.TYPE==='province').length;
   document.getElementById('s-total').textContent = total;
-  document.getElementById('s-rebel').textContent = rebels;
+  document.getElementById('s-city').textContent = cities;
   document.getElementById('s-prov').textContent = provs;
 }
 
@@ -619,15 +727,18 @@ function toggleLayer(layer) {
     });
   }
 
-  if (layer === 'rebels' || layer === 'markers') {
+  if (layer === 'markers') {
     chartInstance.setOption({
       series: [
         { data: getCapData() },
         { data: getCityData() },
-        { data: getRebelData() },
-        { data: getRebelRipple() },
       ]
     });
+  }
+
+  // Terrain toggle — rebuild region styles
+  if (layer === 'terrain') {
+    initMap();
   }
 }
 
