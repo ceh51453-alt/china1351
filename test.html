@@ -456,8 +456,38 @@ function initMap() {
   const src = CHINA_SMOOTH;
 
   // Separate features by type
-  const stateFeatures = src.features.filter(f => !f.properties.TYPE || (f.properties.TYPE !== 'province' && f.properties.TYPE !== 'rebel'));
+  const stateFeatures = src.features.filter(f => f.properties.TYPE !== 'province');
   const provFeatures = src.features.filter(f => f.properties.TYPE === 'province');
+
+  // --- NATIVE GEOSPATIAL SNAPPING ---
+  // Snap province boundaries to state boundaries at runtime to perfectly close any topological gaps
+  const cell = 0.05, threshold = 0.03;
+  const grid = new Map();
+  const getHash = pt => `${Math.floor(pt[0]/cell)}_${Math.floor(pt[1]/cell)}`;
+
+  stateFeatures.forEach(f => {
+    if (f.geometry.type === 'Polygon') f.geometry.coordinates.forEach(r => r.forEach(p => { const h = getHash(p); if(!grid.has(h)) grid.set(h, []); grid.get(h).push(p); }));
+    else if (f.geometry.type === 'MultiPolygon') f.geometry.coordinates.forEach(poly => poly.forEach(r => r.forEach(p => { const h = getHash(p); if(!grid.has(h)) grid.set(h, []); grid.get(h).push(p); })));
+  });
+
+  const snapPt = pt => {
+    let bestDist = threshold, bestPt = pt;
+    const hx = Math.floor(pt[0]/cell), hy = Math.floor(pt[1]/cell);
+    for(let dx=-1; dx<=1; dx++) for(let dy=-1; dy<=1; dy++) {
+      const list = grid.get(`${hx+dx}_${hy+dy}`);
+      if(list) list.forEach(spt => {
+        const d = Math.hypot(pt[0]-spt[0], pt[1]-spt[1]);
+        if(d < bestDist) { bestDist = d; bestPt = spt; }
+      });
+    }
+    return bestPt !== pt ? [bestPt[0], bestPt[1]] : pt;
+  };
+
+  provFeatures.forEach(f => {
+    if (f.geometry.type === 'Polygon') f.geometry.coordinates = f.geometry.coordinates.map(r => r.map(snapPt));
+    else if (f.geometry.type === 'MultiPolygon') f.geometry.coordinates = f.geometry.coordinates.map(poly => poly.map(r => r.map(snapPt)));
+  });
+  // ----------------------------------
   
   // Overlay countries: smaller countries that should render ON TOP of Yuan
   const OVERLAY_NAMES = ['Cao Ly', 'Goryeo', '高丽', 'Nhật Bản', '日本', 'Japan', 'Đại Việt', '大越', 'Chiêm Thành', '占城', 'Champa', 'Khmer', '吴哥', 'Angkor', 'Tố Khả Thái', '素可泰', 'Sukhothai'];
@@ -489,8 +519,8 @@ function initMap() {
         borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(201,169,110,.25)',
         borderWidth: isRebel ? 1.5 : 1,
         borderType: isRebel ? 'dashed' : 'solid',
-        shadowColor: isRebel ? c : 'transparent',
-        shadowBlur: isRebel ? 12 : 0,
+        shadowColor: 'transparent', // Optimizing lag: Disable shadow drop for normal states of complex vectors
+        shadowBlur: 0,
       },
       emphasis: {
         itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2, shadowColor:c, shadowBlur:20 },
@@ -512,7 +542,7 @@ function initMap() {
     const p = f.properties;
     return {
       name: p.NAME,
-      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.45)', borderWidth: 1.2, borderType: [6, 4, 2, 4] },
+      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.45)', borderWidth: 1.2, borderType: 'dashed' },
       emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.7)', borderWidth:1.8 }, label: { show:true, color:'var(--gold)', fontSize:12 } },
       label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(255,255,255,.35)', fontSize: 9, fontFamily: 'Inter, sans-serif' }
     };
