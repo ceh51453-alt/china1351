@@ -220,7 +220,7 @@ function createTerrainCanvas(baseColor, type) {
   ctx.lineJoin = 'round';
 
   if (type === 'mountain') {
-    // ⛰ Núi: Nhiều đỉnh tam giác nhọn xếp chồng lấp nhau
+    // ⛰ Núi: Vài đỉnh tam giác nhọn (giảm độ dày đặc)
     const drawPeak = (cx, cy, w, h) => {
       // Bóng đổ
       ctx.fillStyle = iconColorDark;
@@ -251,35 +251,22 @@ function createTerrainCanvas(baseColor, type) {
       ctx.closePath();
       ctx.fill();
     };
-    // Hàng sau (xa) — nhỏ
-    drawPeak(14, 30, 14, 13);
-    drawPeak(42, 26, 12, 11);
-    drawPeak(72, 28, 13, 12);
-    drawPeak(100, 32, 11, 10);
-    drawPeak(120, 26, 10, 9);
-    // Hàng giữa — vừa
-    drawPeak(28, 52, 20, 20);
-    drawPeak(58, 48, 18, 18);
-    drawPeak(88, 54, 22, 22);
-    drawPeak(112, 50, 16, 15);
-    // Hàng trước (gần) — lớn
-    drawPeak(8, 78, 18, 16);
-    drawPeak(36, 82, 26, 28);
-    drawPeak(68, 86, 24, 26);
-    drawPeak(98, 80, 20, 22);
-    drawPeak(118, 88, 16, 14);
-    // Hàng cuối — lớn nhất, bị cắt dưới
-    drawPeak(20, 110, 28, 25);
-    drawPeak(54, 114, 22, 20);
-    drawPeak(84, 108, 26, 24);
-    drawPeak(110, 116, 20, 18);
+    // Hàng sau
+    drawPeak(20, 30, 20, 18);
+    drawPeak(80, 26, 18, 16);
+    // Hàng giữa
+    drawPeak(45, 60, 24, 22);
+    drawPeak(105, 55, 22, 20);
+    // Hàng trước
+    drawPeak(25, 95, 28, 25);
+    drawPeak(85, 90, 26, 24);
 
   } else if (type === 'plateau') {
-    // 〰 Cao nguyên: Nhiều đường đồng mức + sỏi đá dày đặc
+    // 〰 Cao nguyên: Ít đường đồng mức + sỏi đá vừa phải
     ctx.strokeStyle = iconColor;
     ctx.lineWidth = 1;
-    for (let row = 0; row < 9; row++) {
-      const y = 6 + row * 14;
+    for (let row = 0; row < 5; row++) {
+      const y = 15 + row * 24;
       const shift = (row % 2 === 0) ? 3 : -3;
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -287,15 +274,10 @@ function createTerrainCanvas(baseColor, type) {
       ctx.bezierCurveTo(tile*0.8, y - shift*0.8, tile*0.9, y + shift*0.3, tile, y - 1);
       ctx.stroke();
     }
-    // Sỏi đá rải dày
+    // Sỏi đá
     ctx.fillStyle = iconColorDark;
     const pebbles = [
-      [6,10],[22,6],[38,14],[54,8],[70,12],[86,6],[102,10],[118,8],
-      [14,28],[30,34],[46,26],[62,32],[78,28],[94,36],[110,30],
-      [8,50],[24,46],[40,52],[56,48],[72,54],[88,46],[104,50],[120,48],
-      [16,68],[32,72],[48,66],[64,70],[80,68],[96,74],[112,66],
-      [6,88],[22,84],[38,90],[54,86],[70,92],[86,84],[102,88],[118,86],
-      [14,106],[30,110],[46,104],[62,108],[78,106],[94,112],[110,104]
+      [20,20],[80,25],[40,40],[100,50],[30,70],[90,85],[60,105],[110,110]
     ];
     pebbles.forEach(([dx,dy]) => {
       ctx.beginPath();
@@ -305,36 +287,29 @@ function createTerrainCanvas(baseColor, type) {
     // Vết nứt nhỏ
     ctx.strokeStyle = iconColorLight;
     ctx.lineWidth = 0.5;
-    [[20,40,35,45],[60,60,75,58],[100,20,108,28],[40,95,55,90],[90,100,105,95]].forEach(([x1,y1,x2,y2]) => {
+    [[20,40,35,45],[60,60,75,58]].forEach(([x1,y1,x2,y2]) => {
       ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
     });
 
   } else {
-    // 🌾 Đồng bằng: Nhiều bụi cỏ rải dày đặc
+    // 🌾 Đồng bằng: Ít bụi cỏ, phân tán
     ctx.strokeStyle = iconColor;
     ctx.lineWidth = 0.8;
     const grass = [
-      [8,8],[24,12],[40,6],[56,14],[72,8],[88,12],[104,6],[120,10],
-      [16,24],[32,28],[48,22],[64,26],[80,24],[96,30],[112,22],
-      [6,38],[22,42],[38,36],[54,40],[70,38],[86,44],[102,36],[118,40],
-      [14,54],[30,58],[46,52],[62,56],[78,54],[94,60],[110,52],
-      [8,68],[24,72],[40,66],[56,70],[72,68],[88,74],[104,66],[120,70],
-      [16,84],[32,88],[48,82],[64,86],[80,84],[96,90],[112,82],
-      [6,98],[22,102],[38,96],[54,100],[70,98],[86,104],[102,96],[118,100],
-      [14,114],[30,118],[46,112],[62,116],[78,114],[94,120],[110,112]
+      [20,20],[80,15],[45,45],[105,40],[30,75],[90,70],[60,105],[110,100],
+      [50,20],[15,55],[85,95],[40,85],[115,25],[75,55],[10,100]
     ];
     grass.forEach(([gx,gy]) => {
       ctx.beginPath();
-      ctx.moveTo(gx, gy); ctx.lineTo(gx-2, gy-5);
-      ctx.moveTo(gx, gy); ctx.lineTo(gx+1, gy-6);
-      ctx.moveTo(gx, gy); ctx.lineTo(gx+3, gy-4);
+      ctx.moveTo(gx, gy); ctx.lineTo(gx-1.5, gy-4);
+      ctx.moveTo(gx, gy); ctx.lineTo(gx+0.5, gy-5);
+      ctx.moveTo(gx, gy); ctx.lineTo(gx+2, gy-3);
       ctx.stroke();
     });
     // Chấm hoa nhỏ rải thưa
     ctx.fillStyle = iconColorLight;
     [
-      [20,18],[52,34],[84,16],[116,50],[36,62],[68,78],[100,44],
-      [12,90],[44,106],[76,94],[108,110],[28,46],[60,8],[92,66]
+      [35,30],[65,25],[95,50],[25,65],[55,90],[105,80],[80,115]
     ].forEach(([dx,dy]) => {
       ctx.beginPath();
       ctx.arc(dx, dy, 1.2, 0, Math.PI*2);
@@ -358,11 +333,25 @@ const TERRAIN_TYPES = {
   '#DAA520': 'plains',      // Champa
 };
 const terrainCanvasCache = {};
-function getTerrainCanvas(color) {
-  if (!terrainCanvasCache[color]) {
-    terrainCanvasCache[color] = createTerrainCanvas(color, TERRAIN_TYPES[color] || 'plains');
+function getTerrainCanvas(color, name) {
+  const cacheKey = color + '_' + (name || 'none');
+  if (!terrainCanvasCache[cacheKey]) {
+    let type = TERRAIN_TYPES[color] || 'plains';
+    
+    // Đa dạng hóa địa hình cho Đại Nguyên dựa vào tên Hành Tỉnh
+    if (color === '#C9A96E' && name) {
+      const n = name.toLowerCase();
+      if (n.includes('tứ xuyên') || n.includes('vân nam') || n.includes('cam túc') || n.includes('lĩnh bắc')) {
+        type = 'plateau';
+      } else if (n.includes('thiểm tây') || n.includes('sơn tây')) {
+        type = 'mountain';
+      } else {
+        type = 'plains';
+      }
+    }
+    terrainCanvasCache[cacheKey] = createTerrainCanvas(color, type);
   }
-  return terrainCanvasCache[color];
+  return terrainCanvasCache[cacheKey];
 }
 
 // === LAYER VISIBILITY STATE ===
@@ -651,7 +640,7 @@ function initMap() {
     const isRebel = p.TYPE === 'rebel';
     let areaFill;
     if (layerState.terrain && !isRebel && c.startsWith('#')) {
-      areaFill = { image: getTerrainCanvas(c), repeat: 'repeat' };
+      areaFill = { image: getTerrainCanvas(c, p.NAME), repeat: 'repeat' };
     } else if (isRebel) {
       areaFill = { type:'linear', x:0,y:0,x2:1,y2:1, colorStops:[{offset:0,color:c},{offset:1,color:alpha(c,.6)}] };
     } else {
@@ -685,9 +674,13 @@ function initMap() {
   // Build region styles for provinces (styled as administrative seals/badges)
   provRegions = provFeatures.map(f => {
     const p = f.properties;
+    let areaFill = 'transparent';
+    if (layerState.terrain) {
+      areaFill = { image: getTerrainCanvas('#C9A96E', p.NAME), repeat: 'repeat' };
+    }
     return {
       name: p.NAME,
-      itemStyle: { areaColor: 'transparent', borderColor: 'transparent', borderWidth: 0 },
+      itemStyle: { areaColor: areaFill, borderColor: 'transparent', borderWidth: 0 },
       emphasis: { 
         itemStyle: { areaColor: 'rgba(201,169,110,.05)' }, 
         label: { 
@@ -726,7 +719,7 @@ function initMap() {
     
     let areaFill = c;
     if (layerState.terrain && c.startsWith('#')) {
-      areaFill = { image: getTerrainCanvas(c), repeat: 'repeat' };
+      areaFill = { image: getTerrainCanvas(c, p.NAME), repeat: 'repeat' };
     }
     
     return {
