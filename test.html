@@ -201,55 +201,89 @@ const CHINA_SMOOTH = CHINA_1351;
 // === TERRAIN TEXTURE GENERATOR ===
 function createTerrainCanvas(baseColor, type) {
   const c = document.createElement('canvas');
-  c.width = 256; c.height = 256;
+  const size = 512; // Tăng kích thước để vân đỡ bị lặp lại
+  c.width = size; c.height = size;
   const ctx = c.getContext('2d');
   const r = (hex, i) => parseInt(hex.slice(i, i+2), 16);
   const br = r(baseColor,1), bg = r(baseColor,3), bb = r(baseColor,5);
 
-  // Base fill
+  // Nền cơ bản
   ctx.fillStyle = baseColor;
-  ctx.fillRect(0, 0, 256, 256);
+  ctx.fillRect(0, 0, size, size);
 
-  // Perlin-like noise via layered circles (Tối ưu: Giảm số lượng điểm vẽ, tăng kích thước để dễ nhìn rõ địa hình)
   const rng = (s) => { s = Math.sin(s) * 43758.5453; return s - Math.floor(s); };
-  for (let i = 0; i < 80; i++) {
-    const x = rng(i * 7.3) * 256;
-    const y = rng(i * 13.7 + 5) * 256;
-    const sz = rng(i * 3.1 + 2) * 35 + 10;
-    const v = (rng(i * 11.9 + 3) - 0.5) * 45;
+
+  // 1. Tạo các đốm địa hình hữu cơ (Topographic contours)
+  const numLayers = type === 'mountain' ? 180 : (type === 'plateau' ? 120 : 80);
+  for (let i = 0; i < numLayers; i++) {
+    const x = rng(i * 1.5) * size;
+    const y = rng(i * 2.3 + 5) * size;
+    const sz = rng(i * 3.7 + 2) * 80 + 30; 
+    
+    // Tăng giảm cường độ sáng tối của đốm để mô phỏng cao độ
+    const v = (rng(i * 4.9 + 3) - 0.5) * (type === 'mountain' ? 70 : 40);
     const nr = Math.max(0, Math.min(255, br + v));
     const ng = Math.max(0, Math.min(255, bg + v));
     const nb = Math.max(0, Math.min(255, bb + v));
-    ctx.fillStyle = `rgba(${nr|0},${ng|0},${nb|0},0.28)`;
+    
+    ctx.fillStyle = `rgba(${nr|0},${ng|0},${nb|0},0.35)`;
+    
+    // Vẽ khối hữu cơ thay vì ellipse đơn điệu
     ctx.beginPath();
-    ctx.ellipse(x, y, sz, sz * 0.7, rng(i)*Math.PI, 0, Math.PI * 2);
+    ctx.moveTo(x + sz, y);
+    for (let a = 0; a < Math.PI * 2; a += 0.4) {
+      const r_modifier = sz * (0.6 + 0.4 * rng(i + a));
+      ctx.lineTo(x + Math.cos(a)*r_modifier, y + Math.sin(a)*r_modifier);
+    }
+    ctx.closePath();
     ctx.fill();
+    
+    // Viền nhẹ tạo đường đồng mức
+    ctx.strokeStyle = `rgba(${nr|0},${ng|0},${nb|0},0.6)`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
 
-  // Mountain ridges for highlands
+  // 2. Dãy núi / Đất gồ ghề (Ridges)
   if (type === 'mountain' || type === 'plateau') {
-    ctx.strokeStyle = `rgba(${Math.min(255,br+40)},${Math.min(255,bg+35)},${Math.min(255,bb+30)},0.25)`;
-    ctx.lineWidth = 2.5;
-    for (let i = 0; i < 6; i++) {
+    ctx.strokeStyle = `rgba(${Math.min(255,br+60)},${Math.min(255,bg+55)},${Math.min(255,bb+50)},0.35)`;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = type === 'mountain' ? 4.5 : 2.5;
+    
+    const numRidges = type === 'mountain' ? 25 : 12;
+    for (let i = 0; i < numRidges; i++) {
       ctx.beginPath();
-      let x = rng(i * 31) * 256;
-      let y = rng(i * 47 + 10) * 256;
+      let x = rng(i * 11) * size;
+      let y = rng(i * 17 + 10) * size;
       ctx.moveTo(x, y);
-      for (let j = 0; j < 4; j++) {
-        x += (rng(i * 17 + j * 7) - 0.3) * 60;
-        y += (rng(i * 23 + j * 11) - 0.5) * 50;
-        ctx.lineTo(x, y);
+      
+      // Vẽ các phân đoạn gãy khúc
+      for (let j = 0; j < 6; j++) {
+        let dx = (rng(i * 13 + j * 7) - 0.5) * 110;
+        let dy = (rng(i * 19 + j * 11) - 0.5) * 110;
+        
+        ctx.lineTo(x + dx, y + dy);
+        x += dx; y += dy;
       }
       ctx.stroke();
+      
+      // Bóng đổ giả 3D cho dãy núi
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 4;
+      ctx.stroke();
+      ctx.shadowColor = 'transparent'; // reset
     }
   }
 
-  // Subtle gradient overlay for depth
-  const grad = ctx.createRadialGradient(128, 128, 30, 128, 128, 180);
-  grad.addColorStop(0, `rgba(${Math.min(255,br+20)},${Math.min(255,bg+18)},${Math.min(255,bb+15)},0.15)`);
-  grad.addColorStop(1, `rgba(${Math.max(0,br-10)},${Math.max(0,bg-10)},${Math.max(0,bb-8)},0.1)`);
+  // 3. Phủ bóng mờ toàn texture
+  const grad = ctx.createRadialGradient(size/2, size/2, size*0.2, size/2, size/2, size*0.8);
+  grad.addColorStop(0, `rgba(${Math.min(255,br+30)},${Math.min(255,bg+25)},${Math.min(255,bb+20)},0.1)`);
+  grad.addColorStop(1, `rgba(${Math.max(0,br-20)},${Math.max(0,bg-20)},${Math.max(0,bb-15)},0.15)`);
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 256, 256);
+  ctx.fillRect(0, 0, size, size);
 
   return c;
 }
@@ -440,8 +474,57 @@ const MARKERS = [
 
 
 // Generative helpers for markers
-const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'diamond',symbolSize:14,itemStyle:{color:'#FFDF00',borderColor:'#fff',borderWidth:1.5,shadowColor:'rgba(0,0,0,0.8)',shadowBlur:4},label:{show:true,formatter:m.name,position:'right',color:'#FFDF00',fontSize:13,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#111',textBorderWidth:3}})) : [];
-const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type==='city').map(m=>({name:m.name,value:[...m.coords,5],symbol:'circle',symbolSize:7,itemStyle:{color:'#FFF',borderColor:'#222',borderWidth:2,shadowColor:'rgba(0,0,0,0.6)',shadowBlur:2},label:{show:true,formatter:m.name,position:'right',color:'#FFF',fontSize:11,fontFamily:'Noto Serif',fontWeight:'600',textBorderColor:'#111',textBorderWidth:2.5}})) : [];
+const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'path://M5 0L10 5L5 10L0 5Z',symbolSize:16,itemStyle:{color:'#FFDF00',borderColor:'#fff',borderWidth:2,shadowColor:'rgba(0,0,0,0.8)',shadowBlur:6},label:{show:true,formatter:m.name,position:'right',color:'#FFDF00',fontSize:14,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#111',textBorderWidth:3}})) : [];
+
+const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type !== 'capital').map(m => {
+  let subType = m.type;
+  
+  if (subType === 'city') {
+    const isLarge = ['Hàng Châu', 'Khai Phong', 'Tuyền Châu', 'Bình Giang', 'Quảng Châu', 'Lạc Dương', 'Trường An', 'Thành Đô', 'Đại Đồng', 'Cát Lâm', 'Liêu Dương'].includes(m.name);
+    const isMedium = m.name.includes('Châu') || m.name.includes('Phủ') || m.name.includes('Lộ');
+    const isFort = m.name.includes('Quan') || m.name.includes('Ải') || m.name.includes('Môn') || m.name.includes('Trấn');
+    
+    if (isLarge) subType = 'large_city';
+    else if (isFort) subType = 'fort';
+    else if (isMedium) subType = 'medium_city';
+    else subType = 'small_city';
+  }
+
+  let symbol = 'circle';
+  let symbolSize = 6;
+  let color = '#FFF';
+  let borderColor = '#222';
+  let borderWidth = 1.5;
+  let labelFontSize = 10;
+  let labelColor = '#FFF';
+
+  if (subType === 'large_city') { // Đại thành (Hình vuông/Chữ nhật viền vàng lớn)
+    symbol = 'rect'; symbolSize = 10; 
+    color = '#111'; borderColor = '#C9A96E'; borderWidth = 2; 
+    labelFontSize = 12; labelColor = '#e8e0d4';
+  } else if (subType === 'fort') { // Cửa ải / Trấn (Hình tam giác đỏ / quân sự)
+    symbol = 'triangle'; symbolSize = 9; 
+    color = '#CD5C5C'; borderColor = '#fff'; borderWidth = 1.5; 
+    labelFontSize = 11;
+  } else if (subType === 'medium_city') { // Phủ/Châu (Hình tròn viền kép)
+    symbol = 'circle'; symbolSize = 7.5; 
+    color = 'rgba(232,224,212,0.85)'; borderColor = '#333'; borderWidth = 2; 
+    labelFontSize = 11;
+  } else { // Tuyến hành chính nhỏ (Đốm nhỏ mờ)
+    symbol = 'circle'; symbolSize = 5; 
+    color = '#999'; borderColor = '#222'; borderWidth = 1; 
+    labelFontSize = 10; labelColor = 'rgba(255,255,255,0.7)';
+  }
+
+  return {
+    name: m.name,
+    value: [...m.coords, symbolSize],
+    symbol: symbol,
+    symbolSize: symbolSize,
+    itemStyle: { color, borderColor, borderWidth, shadowColor:'rgba(0,0,0,0.6)', shadowBlur:3 },
+    label: { show:true, formatter: m.name, position:'right', color:labelColor, fontSize:labelFontSize, fontFamily:'Noto Serif', fontWeight:'600', textBorderColor:'#111', textBorderWidth:2.5 }
+  };
+}) : [];
 
 // === INIT ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -601,12 +684,16 @@ function initMap() {
         label: { show:true, color:'#fff', fontSize:13, fontWeight:'bold' }
       },
       label: { 
-        show: isCaoLy, 
+        show: true, 
         formatter: p.NAME_VI || p.NAME_ZH || p.NAME,
-        color: 'rgba(232, 224, 212, 0.7)',
-        fontSize: 14,
+        color: isCaoLy ? '#ffffff' : 'rgba(232, 224, 212, 0.65)',
+        fontSize: isCaoLy ? 16 : 12,
         fontFamily: 'Noto Serif, serif',
-        fontWeight: 'bold'
+        fontWeight: isCaoLy ? '900' : 'bold',
+        textBorderColor: isCaoLy ? 'rgba(0,0,0,0.85)' : 'transparent',
+        textBorderWidth: isCaoLy ? 2 : 0,
+        textShadowColor: isCaoLy ? 'rgba(0,0,0,0.5)' : 'transparent',
+        textShadowBlur: isCaoLy ? 4 : 0
       }
     };
   });
@@ -641,8 +728,18 @@ function initMap() {
         if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
           const m = MARKERS.find(m => m.name === p.name);
           if (m) {
-            const typeStr = m.type === 'capital' ? '👑 Kinh đô' : '🏰 Thành trì / Cửa ải';
-            const color = m.type === 'capital' ? '#FFDF00' : '#FFFFFF';
+            let typeStr = '🏰 Thành trì';
+            let color = '#FFFFFF';
+            if (m.type === 'capital') { typeStr = '👑 Kinh đô'; color = '#FFDF00'; }
+            else {
+              const isLarge = ['Hàng Châu', 'Khai Phong', 'Tuyền Châu', 'Bình Giang', 'Quảng Châu', 'Lạc Dương', 'Trường An', 'Thành Đô', 'Đại Đồng', 'Cát Lâm', 'Liêu Dương'].includes(m.name);
+              const isMedium = m.name.includes('Châu') || m.name.includes('Phủ') || m.name.includes('Lộ');
+              const isFort = m.name.includes('Quan') || m.name.includes('Ải') || m.name.includes('Môn') || m.name.includes('Trấn');
+              if (isLarge) { typeStr = '💠 Đại thành / Cự trấn'; color = '#C9A96E'; }
+              else if (isFort) { typeStr = '⚔ Cửa ải / Trấn thủ'; color = '#CD5C5C'; }
+              else if (isMedium) { typeStr = '🏛 Phủ / Châu thành'; color = 'rgba(232,224,212,0.9)'; }
+              else { typeStr = '⛺ Tuyến hành chính dưới / Vệ'; color = '#AAA'; }
+            }
             return `<div style="font-size:14px;font-weight:700;color:${color}">${m.name}</div>
                     <div style="font-size:10px;color:rgba(232,224,212,.5);margin-top:2px;margin-bottom:6px">${typeStr}</div>
                     <div style="font-size:12px;color:rgba(232,224,212,.9)">${m.vi}</div>`;
@@ -667,12 +764,37 @@ function initMap() {
     },
 
     series: [
-      { name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
-      { name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
+      { id: 'sc-capitals', name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
+      { id: 'sc-cities', name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
     ]
   };
 
   chartInstance.setOption(option, true);
+  
+  // Track dynamic zoom visibility
+  layerState.zoomMarkers = true;
+
+  // Zoom threshold for showing markers
+  chartInstance.on('georoam', function(params) {
+    if (params.zoom != null || params.roam != null) {
+      const opt = chartInstance.getOption();
+      if (!opt.geo || !opt.geo[0]) return;
+      const currentZoom = opt.geo[0].zoom;
+      
+      // Minimum zoom to see markers
+      const showMarkers = currentZoom > 3.0;
+      
+      if (layerState.zoomMarkers !== showMarkers) {
+        layerState.zoomMarkers = showMarkers;
+        chartInstance.setOption({
+          series: [
+            { id: 'sc-capitals', data: (showMarkers && layerState.markers) ? getCapData() : [] },
+            { id: 'sc-cities', data: (showMarkers && layerState.markers) ? getCityData() : [] }
+          ]
+        });
+      }
+    }
+  });
 
   // Click → info panel (works on both geo layers and markers)
   chartInstance.on('click', p => {
