@@ -632,8 +632,8 @@ function initMap() {
     },
 
     series: [
-      { name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), zlevel:2 },
-      { name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), zlevel:2 },
+      { name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
+      { name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
     ]
   };
 
