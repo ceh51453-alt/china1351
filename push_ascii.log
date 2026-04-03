@@ -1,0 +1,45 @@
+git : remote: error: 
+Trace: 40aadcc0abd1bfced6
+289e36f8455f54055941f3142
+30991d920db514b0d1d8a    
+    
+At line:1 char:1
++ git push origin main > 
+push.log 2>&1; 
+Get-Content push.log
++ ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (remote: error: ...b   
+ 0d1d8a        :Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+remote: error: See 
+https://gh.io/lfs for 
+more information.        
+remote: error: File 
+error.txt is 123.56 MB; 
+this exceeds GitHub's 
+file size limit of 
+100.00 MB        
+remote: error: GH001: 
+Large files detected. 
+You may want to try Git 
+Large File Storage - http
+s://git-lfs.github.com.  
+      
+To https://github.com/ceh
+51453-alt/china1351
+ ! [remote rejected] 
+main -> main 
+(pre-receive hook 
+declined)
+error: failed to push 
+some refs to 'https://git
+hub.com/ceh51453-alt/chin
+a1351'

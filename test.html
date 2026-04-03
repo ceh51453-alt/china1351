@@ -660,13 +660,21 @@ function initMap() {
   chartInstance.on('georoam', function(params) {
     if (syncing) return;
     syncing = true;
-    const targetGeoIndex = params.geoIndex === 0 ? 1 : 0;
-    chartInstance.setOption({
-      geo: [{}, {}].map((_, i) => i === targetGeoIndex ? {
-        center: chartInstance.getOption().geo[params.geoIndex].center,
-        zoom: chartInstance.getOption().geo[params.geoIndex].zoom
-      } : {})
-    });
+    
+    const opt = chartInstance.getOption();
+    if (opt && opt.geo) {
+      let srcIdx = (params.componentType === 'geo' && params.componentIndex != null) ? params.componentIndex : 0;
+      let srcGeo = opt.geo[srcIdx] || opt.geo[0];
+      
+      if (srcGeo) {
+        chartInstance.setOption({
+          geo: [
+            { id: 'geo-base', center: srcGeo.center, zoom: srcGeo.zoom },
+            { id: 'geo-overlay', center: srcGeo.center, zoom: srcGeo.zoom }
+          ]
+        });
+      }
+    }
     syncing = false;
   });
 
@@ -746,7 +754,7 @@ function toggleLayer(layer) {
   if (layer === 'states' || layer === 'provinces') {
     chartInstance.setOption({
       geo: {
-        id: 'geo-main',
+        id: 'geo-base',
         map: layerState.provinces ? 'full1351' : 'states1351',
         itemStyle: {
           opacity: layerState.states ? 1 : 0,
