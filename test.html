@@ -491,19 +491,24 @@ function initMap() {
   
   // Overlay countries: smaller countries that should render ON TOP of Yuan
   const OVERLAY_NAMES = ['Cao Ly', 'Goryeo', '高丽', 'Nhật Bản', '日本', 'Japan', 'Đại Việt', '大越', 'Chiêm Thành', '占城', 'Champa', 'Khmer', '吴哥', 'Angkor', 'Tố Khả Thái', '素可泰', 'Sukhothai'];
-  const overlayFeatures = stateFeatures.filter(f => OVERLAY_NAMES.some(n => (f.properties.NAME || '').includes(n)));
+  const isOverlay = f => OVERLAY_NAMES.some(n => (f.properties.NAME || '').includes(n));
 
-  // Register maps with smoothed geometry
-  echarts.registerMap('states1351', { type:'FeatureCollection', features: stateFeatures });
-  echarts.registerMap('full1351', { type:'FeatureCollection', features: [...stateFeatures, ...provFeatures] });
-  echarts.registerMap('overlay1351', { type:'FeatureCollection', features: overlayFeatures });
+  // === SINGLE GEO ARCHITECTURE ===
+  // Order features: large empires → provinces → small overlay countries (last = rendered on top)
+  const baseStates = stateFeatures.filter(f => !isOverlay(f));
+  const overlayStates = stateFeatures.filter(f => isOverlay(f));
+  const orderedFeatures = [...baseStates, ...provFeatures, ...overlayStates];
 
-  // Build region styles for states
-  stateRegions = stateFeatures.map(f => {
+  // Register single map with correct z-order
+  echarts.registerMap('map1351', { type:'FeatureCollection', features: orderedFeatures });
+  // Also register states-only for toggle
+  echarts.registerMap('states1351', { type:'FeatureCollection', features: [...baseStates, ...overlayStates] });
+
+  // Build region styles for states (base empires)
+  stateRegions = baseStates.map(f => {
     const p = f.properties;
     const c = p.COLOR || '#555';
     const isRebel = p.TYPE === 'rebel';
-    // Terrain texture or flat fill
     let areaFill;
     if (layerState.terrain && !isRebel && c.startsWith('#')) {
       areaFill = { image: getTerrainCanvas(c), repeat: 'repeat' };
@@ -519,11 +524,11 @@ function initMap() {
         borderColor: isRebel ? 'rgba(255,255,255,.7)' : 'rgba(201,169,110,.25)',
         borderWidth: isRebel ? 1.5 : 1,
         borderType: isRebel ? 'dashed' : 'solid',
-        shadowColor: 'transparent', // Optimizing lag: Disable shadow drop for normal states of complex vectors
+        shadowColor: 'transparent',
         shadowBlur: 0,
       },
       emphasis: {
-        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2, shadowColor:c, shadowBlur:20 },
+        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2 },
         label: { show:true, color:'#fff', fontSize:13, fontWeight:'bold' }
       },
       label: {
@@ -543,13 +548,13 @@ function initMap() {
     return {
       name: p.NAME,
       itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.45)', borderWidth: 1.2, borderType: 'dashed' },
-      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.7)', borderWidth:1.8 }, label: { show:true, color:'var(--gold)', fontSize:12 } },
+      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.7)', borderWidth:1.8 }, label: { show:true, color:'#C9A96E', fontSize:12 } },
       label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(255,255,255,.35)', fontSize: 9, fontFamily: 'Inter, sans-serif' }
     };
   });
 
-  // Build overlay regions (small countries rendered on top of Yuan)
-  const overlayRegions = overlayFeatures.map(f => {
+  // Build overlay regions (small countries — rendered last = on top)
+  const overlayRegions = overlayStates.map(f => {
     const p = f.properties;
     const c = p.COLOR || '#555';
     let areaFill = c;
@@ -564,17 +569,18 @@ function initMap() {
         borderWidth: 1,
       },
       emphasis: {
-        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2, shadowColor:c, shadowBlur:20 },
+        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2 },
         label: { show:true, color:'#fff', fontSize:13, fontWeight:'bold' }
       },
-      label: {
-        show: false,
-      }
+      label: { show: false }
     };
   });
 
+  // All regions combined for the single geo
+  const allRegions = [...stateRegions, ...provRegions, ...overlayRegions];
+
   const option = {
-    animation: false, // Tối ưu hiệu năng: Tắt animation để khi drag/zoom map phức tạp không bị lag frame
+    animation: false,
     backgroundColor: '#0a0c10',
     tooltip: {
       trigger: 'item',
@@ -611,74 +617,27 @@ function initMap() {
       }
     },
 
-    // === DUAL GEO LAYERS for correct z-ordering ===
-    // Base layer: large empires (Yuan, Chagatai, Tibet) + provinces + rebels
-    // Overlay layer: small countries (Goryeo, Japan, Dai Viet, Champa, etc.)
-    geo: [
-      {
-        id: 'geo-base',
-        map: 'full1351',
-        roam: true,
-        center: [112, 32],
-        zoom: 4.5,
-        zlevel: 0,
-        scaleLimit: { min:2, max:30 },
-        aspectScale: 0.85,
-        nameProperty: 'NAME',
-        itemStyle: { opacity: 1, areaColor: layerState.terrain ? {image: createTerrainCanvas('#1a1f2e','plains'), repeat:'repeat'} : '#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
-        emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
-        regions: [...stateRegions, ...provRegions]
-      },
-      {
-        id: 'geo-overlay',
-        map: 'overlay1351',
-        roam: true,
-        center: [112, 32],
-        zoom: 4.5,
-        zlevel: 1,
-        z: 10,
-        scaleLimit: { min:2, max:30 },
-        aspectScale: 0.85,
-        nameProperty: 'NAME',
-        itemStyle: { opacity: 0, areaColor:'transparent', borderColor:'transparent', borderWidth:0 },
-        emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
-        regions: overlayRegions,
-        silent: false
-      }
-    ],
+    // === SINGLE GEO — no sync needed, no lag ===
+    geo: {
+      map: 'map1351',
+      roam: true,
+      center: [112, 32],
+      zoom: 4.5,
+      scaleLimit: { min:2, max:30 },
+      aspectScale: 0.85,
+      nameProperty: 'NAME',
+      itemStyle: { areaColor: layerState.terrain ? {image: createTerrainCanvas('#1a1f2e','plains'), repeat:'repeat'} : '#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
+      emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
+      regions: allRegions
+    },
 
     series: [
-      { name:'capitals', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCapData(), zlevel:2 },
-      { name:'cities', type:'scatter', coordinateSystem:'geo', geoIndex:0, data:getCityData(), zlevel:2 },
+      { name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), zlevel:2 },
+      { name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), zlevel:2 },
     ]
   };
 
   chartInstance.setOption(option);
-
-  // Sync roam (pan/zoom) between base and overlay geo layers
-  // Using dispatchAction instead of setOption — orders of magnitude faster
-  let syncing = false;
-  chartInstance.on('georoam', function(params) {
-    if (syncing) return;
-    syncing = true;
-    const srcIdx = params.componentIndex != null ? params.componentIndex : 0;
-    const targetIdx = srcIdx === 0 ? 1 : 0;
-    if (params.dx != null || params.dy != null) {
-      // Pan event
-      chartInstance.dispatchAction({
-        type: 'geoRoam', geoIndex: targetIdx,
-        dx: params.dx || 0, dy: params.dy || 0
-      });
-    } else if (params.zoom != null) {
-      // Zoom event
-      chartInstance.dispatchAction({
-        type: 'geoRoam', geoIndex: targetIdx,
-        zoom: params.zoom,
-        originX: params.originX, originY: params.originY
-      });
-    }
-    syncing = false;
-  });
 
   // Click → info panel (works on both geo layers and markers)
   chartInstance.on('click', p => {
@@ -756,8 +715,7 @@ function toggleLayer(layer) {
   if (layer === 'states' || layer === 'provinces') {
     chartInstance.setOption({
       geo: {
-        id: 'geo-base',
-        map: layerState.provinces ? 'full1351' : 'states1351',
+        map: layerState.provinces ? 'map1351' : 'states1351',
         itemStyle: {
           opacity: layerState.states ? 1 : 0,
           borderWidth: layerState.states ? 0.5 : 0
