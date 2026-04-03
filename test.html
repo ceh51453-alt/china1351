@@ -42,7 +42,7 @@
     .leg-i:hover{opacity:.7}
     .dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
     .dot.rebel{border-radius:50%;animation:pulse 2s infinite}
-    .dot.prov{border-radius:1px;border:1px dashed rgba(255,255,255,.3)}
+    .dot.prov{border-radius:1px;border:1.2px dashed rgba(201,169,110,.45)}
     @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,20,60,.4)}50%{box-shadow:0 0 0 4px rgba(220,20,60,0)}}
     .leg-sub{font-family:Inter,sans-serif;font-size:8px;color:var(--dim);display:block}
 
@@ -512,7 +512,7 @@ function initMap() {
     const p = f.properties;
     return {
       name: p.NAME,
-      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.35)', borderWidth: 1.2, borderType: 'dashed' },
+      itemStyle: { areaColor: 'transparent', borderColor: 'rgba(201,169,110,.45)', borderWidth: 1.2, borderType: [6, 4, 2, 4] },
       emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.12)', borderColor:'rgba(201,169,110,.7)', borderWidth:1.8 }, label: { show:true, color:'var(--gold)', fontSize:12 } },
       label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(255,255,255,.35)', fontSize: 9, fontFamily: 'Inter, sans-serif' }
     };
