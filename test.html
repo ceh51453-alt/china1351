@@ -581,23 +581,33 @@ function initMap() {
   // Build overlay regions (small countries — rendered last = on top)
   const overlayRegions = overlayStates.map(f => {
     const p = f.properties;
+    const isCaoLy = p.NAME && (p.NAME.includes('Cao Ly') || p.NAME.includes('Goryeo') || p.NAME.includes('高丽'));
     const c = p.COLOR || '#555';
+    
     let areaFill = c;
     if (layerState.terrain && c.startsWith('#')) {
       areaFill = { image: getTerrainCanvas(c), repeat: 'repeat' };
     }
+    
     return {
       name: p.NAME,
       itemStyle: {
-        areaColor: areaFill,
-        borderColor: 'rgba(201,169,110,.35)',
-        borderWidth: 1,
+        areaColor: isCaoLy ? 'transparent' : areaFill,
+        borderColor: isCaoLy ? 'transparent' : 'rgba(201,169,110,.35)',
+        borderWidth: isCaoLy ? 0 : 1,
       },
       emphasis: {
-        itemStyle: { areaColor: lighten(c,30), borderColor:'#fff', borderWidth:2 },
+        itemStyle: { areaColor: isCaoLy ? 'rgba(255,255,255,0.05)' : lighten(c,30), borderColor: isCaoLy ? 'transparent' : '#fff', borderWidth: isCaoLy ? 0 : 2 },
         label: { show:true, color:'#fff', fontSize:13, fontWeight:'bold' }
       },
-      label: { show: false }
+      label: { 
+        show: isCaoLy, 
+        formatter: p.NAME_VI || p.NAME_ZH || p.NAME,
+        color: 'rgba(232, 224, 212, 0.7)',
+        fontSize: 14,
+        fontFamily: 'Noto Serif, serif',
+        fontWeight: 'bold'
+      }
     };
   });
 
