@@ -1,0 +1,128 @@
+window.MAP_LORE_PROVINCES = {
+  'Trung Thư tỉnh (中书省)': { TYPE: 'province', NAME_VI: 'Trung Thư tỉnh (Kinh đô)', DESC: 'Trực thuộc Trung ương. Vùng đất cốt lõi của nhà Nguyên, bao gồm Đại Đô (Bắc Kinh) và Thượng Đô, cùng với những vùng đông dân và trù phú nhất Lưỡng Hà.' },
+  'Lĩnh Bắc hành tỉnh (岭北行省)': { TYPE: 'province', NAME_VI: 'Lĩnh Bắc hành tỉnh', DESC: 'Vùng đất khởi thủy của Đế quốc Mông Cổ, nơi tập trung các bộ lạc du mục. Mặc dù rộng lớn nhưng dân số thưa thớt, chủ yếu là quân đội và kỵ binh chăn thả.' },
+  'Liêu Dương hành tỉnh (辽阳行省)': { TYPE: 'province', NAME_VI: 'Liêu Dương hành tỉnh', DESC: 'Khu vực Mãn Châu và một phần Triều Tiên. Nơi cung cấp ngựa chiến, nhân sâm và sản vật phương Bắc, đồng thời kiểm soát biên giới trị an khu vực Cao Ly.' },
+  'Hà Nam Giang Bắc hành tỉnh (河南江北行省)': { TYPE: 'province', NAME_VI: 'Hà Nam Giang Bắc hành tỉnh', DESC: 'Vùng đất chiến lược giao thoa giữa miền Nam và miền Bắc. Đây là chiến trường chính bùng nổ các cuộc khởi nghĩa Hồng Cân quân với những trận chiến khốc liệt nhất.' },
+  'Thiểm Tây hành tỉnh (陕西行省)': { TYPE: 'province', NAME_VI: 'Thiểm Tây hành tỉnh', DESC: 'Khống chế vùng Tây Bắc, Quan Trung - cửa ngõ tiến vào Tây Vực và Tây Tạng. Địa thế hiểm trở, triều đình bố trí quân lực vô cùng vững mạnh để phòng thủ.' },
+  'Cam Túc hành tỉnh (甘肃行省)': { TYPE: 'province', NAME_VI: 'Cam Túc hành tỉnh', DESC: 'Nắm giữ Hành lang Hà Tây nối liền Con đường Tơ lụa. Đóng vai trò thương mại quan trọng và tuyến phòng thủ chống lại các thế lực Tây Vực.' },
+  'Tứ Xuyên hành tỉnh (四川行省)': { TYPE: 'province', NAME_VI: 'Tứ Xuyên hành tỉnh', DESC: 'Vùng đất Thiên Phủ "dễ thủ khó công", tách biệt bởi địa hình hiểm trở núi non bao quanh. Là một trong những vựa lúa cực kỳ quan trọng của đế quốc.' },
+  'Vân Nam hành tỉnh (云南行省)': { TYPE: 'province', NAME_VI: 'Vân Nam hành tỉnh', DESC: 'Đất cũ của Vương quốc Đại Lý. Nhà Nguyên thiết lập hệ thống Thổ ty để cai trị đa dân tộc. Đây là khu vực có nhiều thế lực quân sự địa phương cát cứ.' },
+  'Hồ Quảng hành tỉnh (湖广行省)': { TYPE: 'province', NAME_VI: 'Hồ Quảng hành tỉnh', DESC: 'Một trong những vùng sản xuất nông nghiệp lớn nhất Giang Nam. "Hồ Quảng thục, thiên hạ túc". Nơi bùng nổ khởi nghĩa Trần Hữu Lượng và Từ Thọ Huy.' },
+  'Giang Tây hành tỉnh (江西行省)': { TYPE: 'province', NAME_VI: 'Giang Tây hành tỉnh', DESC: 'Vùng đồi núi phức tạp giáp với Phúc Kiến và Quảng Đông. Nơi có truyền thống văn hiến lâu đời nhưng cũng là cái nôi của nhiều cuộc nổi dậy chống Nguyên.' },
+  'Giang Chiết hành tỉnh (江浙行省)': { TYPE: 'province', NAME_VI: 'Giang Chiết hành tỉnh', DESC: 'Tỉnh giàu có và sầm uất nhất đế quốc. Đóng góp hơn một nửa thuế khóa cho triều đình. Trọng tâm là lưu vực Giang Nam và tứ đại danh trấn vô cùng trù phú.' },
+  
+  'Đại Nguyên': { TYPE: 'state', NAME_VI: 'Đại Nguyên', DESC: 'Đế quốc lớn nhất Đông Á do người Mông Cổ cai trị. Đến năm Chí Chính thứ 11 (1351), triều đình phe phái hỗn loạn, hoạn quan và quyền thần lũng đoạn, đại lụt triền miên.', CAPITAL: 'Đại Đô', RULER:'Nguyên Huệ Tông (B.N.C.C Thỏa Hoan Thiết Mộc Nhi)' },
+  'Cao Ly': { TYPE: 'state', NAME_VI: 'Vương quốc Cao Ly', DESC: 'Quốc gia phụ thuộc Đại Nguyên. Dưới thời Cung Mẫn Vương, Cao Ly nhân cơ hội nhà Nguyên suy yếu đã bắt đầu tiến trình giành lại độc lập và lãnh thổ bị mất.', CAPITAL: 'Khai Kinh', RULER:'Cung Mẫn Vương (Vương Kỳ)' },
+  'Nhật Bản': { TYPE: 'state', NAME_VI: 'Nhật Bản (Thời Nam Bắc triều)', DESC: 'Đang trong thời kỳ Nam Bắc triều phân liệt. Mạc phủ Muromachi (Bắc triều) nắm quyền thực tế, trong khi Nam triều tiếp tục kháng cự tại phương Nam.', CAPITAL: 'Kinh Đô', RULER:'Thiên hoàng Go-Murakami / Ashikaga Takauji' },
+  'Đại Việt · Trần triều (大越·陳朝)': { TYPE: 'state', NAME_VI: 'Đại Việt (Trần Triều)', DESC: 'Vương quốc vững mạnh phía Nam sau ba lần đánh bại quân Nguyên Mông. Giai đoạn 1351 là đời vua Trần Dụ Tông, nhưng bắt đầu có nhen nhóm dấu hiệu khủng hoảng nội bộ.', CAPITAL: 'Thăng Long', RULER:'Trần Dụ Tông (Trần Hạo)' },
+  'Chiêm Thành (占城/Champa)': { TYPE: 'state', NAME_VI: 'Vương quốc Chiêm Thành', DESC: 'Vương quốc hàng hải hùng mạnh tại vùng trung nam bán đảo Đông Dương. Giai đoạn này đang chuẩn bị cho thời kỳ chấn hưng sức mạnh chưa từng có bộ dưới thời Chế Bồng Nga.', CAPITAL: 'Đồ Bàn / Vijaya', RULER:'Trà Hòa Bố Để' }
+};
+
+window.MAP_LORE_TERRAIN = {
+    'Hoa Bắc bình nguyên': 'Vùng đồng bằng màu mỡ mênh mông, cái nôi văn minh Hoa Hạ và trung tâm kinh tế - chính trị (nơi đặt Đại Đô).',
+    'Thái Hành Sơn': 'Dãy núi hiểm trở phân chia bình nguyên Hoa Bắc và cao nguyên Hoàng Thổ, rào chắn tự nhiên bảo vệ Sơn Tây.',
+    'Thảo nguyên Mông Cổ': 'Nơi phát tích Đế quốc Mông Cổ, vùng đồng cỏ rộng lớn cung cấp chiến mã và quân lực dũng mãnh nhất thế giới.',
+    'Gobi': 'Sa mạc rộng lớn vô tận, là biên giới tự nhiên giữa thảo nguyên du mục khô cằn và vùng nông nghiệp Nam Trung Hoa.',
+    'Bồn địa Tứ Xuyên': '"Thiên Phủ chi quốc", vùng đất trù phú cực kỳ khép kín, được che chắn toàn bộ bởi đồi núi trùng điệp xung quanh.',
+    'Trường Giang': 'Con sông dài nhất châu Á, hệ thống giao thông huyết mạch của vương triều, nơi giao thương đường thủy sầm uất bậc nhất.',
+    'Hoàng Thổ cao nguyên': 'Cao nguyên lớn nhất thế giới, phủ một màu đất vàng sương mù. Địa hình bị cắt xẻ tàn khốc tạo thành hệ thống phòng ngự tuyệt vời.',
+    'Thanh Tạng cao nguyên': '"Nóc nhà thế giới" với không khí loãng, địa hình lạnh giá và vô cùng khắc nghiệt.',
+    'Tần Lĩnh': 'Ranh giới khí hậu tự nhiên Nam - Bắc. Nơi có các con đường sạn đạo cheo leo vách núi đáng sợ.'
+};
+
+// Phase 1: 50+ descriptions for key cities & rebellious regions (Hoàng Hà, Lưỡng Hoài, Trung Nguyên, Giang Nam)
+window.MAP_LORE_CITIES = {
+    // Top Capitals & Super Important
+    'Đại Đô': 'Thủ đô của đế quốc Nguyên, trung tâm quyền lực tối cao do Hốt Tất Liệt xây dựng. Thành đô sầm uất bậc nhất thế giới kỷ 14.',
+    'Hào Châu': 'Nơi bùng phát mạnh mẽ nhất của nhánh nghĩa quân Khăn Đỏ do Quách Tử Hưng lãnh đạo. Đây cũng là quê hương của Chu Nguyên Chương.',
+    'Bờ sông Hoàng Hà': 'Nơi bùng nổ cuộc nổi dậy của phu đào sông sau khi tìm thấy tượng đá một mắt với câu sấm "Thạch nhân nhất nhãn thiêu Hoàng Hà, thiên hạ phản".',
+    'Trường An': 'Kinh đô huyền thoại của các triều đại cũ (Tây Hán, Đường). Dưới thời Nguyên gọi là Phụng Nguyên lộ, là trọng trấn bảo vệ cửa ngõ Tây Bắc.',
+    'Cáp Lạp Hòa Lâm': 'Kinh đô đầu tiên của Đế quốc Mông Cổ (Karakorum). Nay là đại bản doanh của quân Mông Cổ ở vùng thảo nguyên để trấn áp phản loạn phương Bắc.',
+    'Tây Đô': 'Cứ điểm chiến lược của Đại Việt tại Thanh Hóa nhằm đối phó với sức ép từ phương Bắc và bình định phương Nam.',
+    'Thăng Long': 'Kinh đô hoa lệ của dòng họ Đông A (nhà Trần) - đế chế duy nhất bấy giờ từng 3 lần đánh đuổi kỵ binh Mông Cổ về nước.',
+    'Bình Nhưỡng': 'Kinh đô lịch sử và thành trì then chốt của Cao Ly (Goryeo). Nơi án ngữ biên cương và con đường liên lạc với Nguyên triều.',
+    'Gia Dụ Quan': 'Quan ải chót vót phía Tây của Vạn Lý Trường Thành, cứ điểm hùng vĩ kiểm soát hoàn toàn Hành lang Hà Tây.',
+    'Nhạn Môn Quan': 'Trùng quan hiểm trở khét tiếng nằm chênh vênh trên Thái Hành Sơn, án ngữ con đường huyết mạch thọc sâu vào Trung Nguyên.',
+    'Kiến Khang': 'Thành Nam Kinh sau này. Thành phố giàu có và trù phú bậc nhất khu vực Giang Nam, mục tiêu thèm khát của mọi lực lượng vũ trang.',
+
+    // Giang Nam & Giang Chiết (Giàu có)
+    'Hàng Châu': 'Kinh đô cũ của Nam Tống (Lâm An). Nhờ Marco Polo mô tả, nó được biết đến với tên gọi Quinsay - thành phố hoa lệ và thanh lịch nhất trần gian.',
+    'Bình Giang': 'Hoặc gọi là Tô Châu. Nổi tiếng với việc sản xuất lúa gạo, lụa là quy mô lớn. Sẽ sớm trở thành sào huyệt của thủ lĩnh khởi nghĩa Trương Sĩ Thành.',
+    'Buổi Trảng': 'Một cái tên khá lạ (có thể là cảng phụ), vùng đồng bằng châu thổ với giao thông thủy tiện lợi.',
+    'Tuyền Châu': 'Hải cảng quốc tế lớn nhất thế giới bấy giờ (Zaiton), nơi tụ tập vô số thương nhân Ả Rập, Ba Tư và Châu Âu giao dịch tơ lụa, gốm sứ.',
+    'Phúc Châu': 'Trung tâm hành chính trị an của vùng duyên hải Phúc Kiến. Địa hình đồi núi nhưng phát triển cực thịnh về kinh tế mậu dịch đường biển.',
+    'Chương Châu': 'Vùng đất sản xuất đường và các sản phẩm nhiệt đới, cùng tụ hội mật độ dân số rất cao tại Giang Chiết đông nam.',
+    'Thiệu Hưng': 'Còn gọi là Tuyệt Hưng hoặc Việt Châu. Vùng đất danh tiếng với ngành nấu rượu và sản xuất tơ lụa chất lượng cực kỳ tinh xảo.',
+    'Kiến Ninh': 'Trọng yếu trấn phủ dải đồi núi phía bắc Phúc Kiến, án ngữ con đường thương mại đường bộ dẫn vào trung tâm Giang Chiết.',
+    'Hồ Châu': 'Vựa lúa miền Nam nằm cạnh Thái Hồ. Ngọn nguồn của những loại tơ lụa quý giá nhất dâng lên triều đình.',
+    'Xử Châu': 'Nơi ẩn mình giữa những đồi núi hiểm trở ở phía nam Chiết Giang. Địa hình lý tưởng để các toán thổ phỉ hoặc giang hồ tụ tập.',
+    'Kiến Đức': 'Bộ chỉ huy quân sự và giám sát thuỷ lộ ở Chiết Giang tây bắc. Tuy cực kỳ phì nhiêu nhưng lại là mảnh rốn trúng đòn nhiều cuộc binh đao.',
+    
+    // Giang Tây & Lưỡng Hồ
+    'Tập Khánh': 'Quần thể cứ điểm quanh Kiến Khang (Nam Kinh). Thủ phủ của tập đoàn quân sự Nguyên tại Giang Nam.',
+    'Nam Xương': 'Hay còn gọi là Hồng Châu. Thủ phủ tỉnh Giang Tây. Vị trí án ngữ hồ Bà Dương (Bành Lãi) - chìa khóa để tiến vào duyên hải đông nam.',
+    'Cát An': 'Vùng đất nằm ngay thượng nguồn Cám Giang (Giang Tây), nơi có truyền thống Nho học tự phát rất mạnh mẽ nhưng nhiều sơn tặc cướp giật.',
+    'Cám Châu': 'Vùng sâu xa nam Giang Tây giáp Quảng Đông. Nơi có vô số công xưởng làm gốm và rèn đúc sắt.',
+    'Vũ Xương': 'Cứ điểm phòng ngự kiên cố bậc nhất trên sông Trường Giang (Kinh Châu/Hán Khẩu ngày nay). Lợi thế đường thủy ưu việt.',
+    'Hán Khẩu': 'Ngã ba sông sầm uất bậc nhất. Trọng điểm kinh tế của Hồ Quảng, kết nối giao thông Giang Nam và Tây Bắc.',
+    'Kinh Châu': 'Cựu kinh đô của nhiều nước chư hầu, là điểm then chốt giao thông đường bộ từ Tứ Xuyên xuống đồng bằng trung tâm.',
+    'Hành Châu': 'Tức Hành Dương phủ (Hồ Nam). Một dải đất nông nghiệp lớn trù phú ở phương Nam nhưng địa thế hay bị ngập úng.',
+    'Thường Đức': 'Khu vực tây bắc Hồ Nam, tiếp nối với các hẻm núi lớn vào Tứ Xuyên và Quý Châu. Biên giới trị an rất phức tạp.',
+    'Liễu Châu': 'Vùng đồi núi Quảng Tây, địa hình hiểm ác. Chủ yếu để giam giữ các đối tượng phản nghịch bị triều đình lưu đày.',
+    'Nam Ninh': 'Bức bình phong phía nam Hồ Quảng giáp ranh giới với Đại Việt (Ung Châu cũ). Điểm giao dịch hàng hóa biên mậu sầm uất.',
+    'Thiều Châu': 'Điểm kiểm soát phía bắc Lĩnh Nam (Quảng Đông). Mọi tuyến hậu cần nam tiến đều phải băng qua các hẻm núi tại Thiều Quan.',
+    'Quỳnh Châu': 'Trấn phủ đảo Hải Nam. Căn cứ cô lập ngoài khơi được sử dụng để trừng phạt bế môn các quan lớn của triều đình nếu mắc trọng tội.',
+    
+    // Hà Nam Giang Bắc & Trung Tỉnh (Hoa Bắc)
+    'Bình Thủy': 'Địa danh tại Hoa Bắc nơi phòng ngự của tàn quân Nguyên rất ác liệt.',
+    'Vệ Hãn': 'Bức tường thép của quân đội tập trung kỵ binh Mông Cổ.',
+    'Lộ Châu': 'Trung tâm hậu cần cung cấp lương thực tại nội địa bình nguyên Hoa Bắc.',
+    'Tế Nam': 'Thành phố quan trọng nhất tại bán đảo Sơn Đông, nơi bùng nổ các nhóm khởi nghĩa nông dân do đói kém và hồng thủy.',
+    'Ích Đô': 'Cứ điểm quân sự trung tâm mạnh nhất của triều Nguyên tại vùng duyên hải Sơn Đông, sau này do quân phiệt sát thủ Lý Tư Tề đồn trú.',
+    'Quy Đức': 'Tức Thương Khâu - Hà Nam. Khu vực cực kỳ trù phú ở Trung Nguyên nhưng bị biến thành dải đất trắng do ngập lụt sông Hoàng Hà càn quét.',
+    'Nhữ Ninh': 'Trạm kiểm soát trung tâm của trục đường vận chuyển huyết mạch từ nam lên bắc. Luôn chứng kiến cướp bóc quân nhu nghiêm trọng.',
+    'Nam Dương': 'Hay còn gọi Đặng Châu. Cửa ngõ ngăn sự bành trướng từ phương Nam lên lưu vực sống Hoàng Hà trung du.',
+    'Trừ Châu': 'Quan ải phòng thủ đông bắc An Huy. Sau này Chu Nguyên Chương đã chiếm đoạt được Trừ Châu làm bàn đạp tiền phương của mình.',
+    'Hoài An': 'Cánh cửa kết nối Đại Vận Hà với Hoàng Hà. Trọng trấn số 1 trong việc kiểm soát lưu thông vận lương từ Nam lên Đại Đô.',
+    'Thọ Châu': 'Dải đai an toàn khu vực trung bộ An Huy, gắn liền với các thành trì phòng ngự bờ sông sát Hồ Hoài.',
+    'Hàm Cốc Quan': 'Một trong những ải hùng hiểm nhất Trung Hoa thời cổ đại, phong tỏa toàn bộ hướng tiến công từ Quan Đông vào Trường An.',
+    'Võ Quan': 'Che chở hệ thống mạch núi hiểm yếu tiến xuống Kinh Nguyên, được quân Nguyên cài cắm các toán thiết kỵ thiện chiến nhất phòng ngự.',
+
+    // Phase 2: Điền - Thục - Lưỡng Quảng (Tứ Xuyên, Vân Nam & Hồ Quảng phía Nam)
+    'Thành Đô': 'Thủ phủ Tứ Xuyên mầu mỡ. Dù có địa thế hiểm trở cản bước ngoại xâm, nơi đây đang dần trở thành lò lửa của các nhóm phản loạn địa phương.',
+    'Trùng Khánh': 'Thành phố núi phòng thủ tuyệt mĩ án ngữ khúc quanh sông Trường Giang, được mệnh danh là "cửa ngõ thép" của Tứ Xuyên xuống hạ lưu.',
+    'Quỳ Châu': 'Con mắt của Tam Hiệp. Tất cả thuyền bè tiến vào Tứ Xuyên từ miền trung đều phải vượt qua cứ điểm quân sự cực hiểm ác này.',
+    'Thuận Khánh': 'Lộ trọng yếu nối liền các dải địa hình gập ghềnh từ Nam Tiệp lên Bắc bộ Tứ Xuyên.',
+    'Gia Định': 'Vùng đất giàu cỏ và lương thực, nơi tiếp nhận vô số tị nạn chiến tranh từ phương Bắc tràn xuống.',
+    'Đại Lý': 'Cố đô của vương quốc Đại Lý một thời. Sau khi bị Mông Cổ chinh phục, nay quy phục nhà Nguyên với tư cách các phiên thần quyền uy tại địa phương.',
+    'Trung Khánh': 'Hay còn gọi là Côn Minh. Trung tâm quyền lực mới của hành tỉnh Vân Nam do triều đình thiết lập, thu thuế và kiểm soát các lộ Thổ ty.',
+    'Uy Sở': 'Chốt chặn chiến lược bảo vệ tuyến đường buôn bán ngựa và trà từ vùng đất du mục xuống phương Nam.',
+    'Đại Đồng': 'Cứ điểm phương Bắc.',
+    'Hoành Châu': 'Khu vực trấn áp bạo loạn tại miền Nam.',
+    'Quảng Châu': 'Đại thương cảng phía nam. Tuy nằm xa trung tâm chiến sự Hoa Bắc, nơi đây vẫn chứng kiến sự bất ổn sâu sắc do bị áp bức thương mại.',
+    'Trường Sa': 'Thành phố quan trọng nhất kiểm soát lòng chảo sông Tương, vựa lúa khổng lồ cung cấp cho quân đội Nguyên tại Giang Nam.',
+    'Bá Châu': 'Vùng núi hiểm trở giao thoa giữa Tứ Xuyên và Quý Châu. Được cai trị bởi phiên phủ thế tập họ Dương khét tiếng trung thành nhưng đầy tự trị.',
+    'Quế Lâm': 'Trung tâm hành chính trị an trấn áp các bộ tộc miền núi phía tây nam Hồ Quảng.',
+    'Triệu Châu': 'Sở chỉ huy thu thuế trọng yếu phía tây Quảng Đông.',
+    'Tư Minh': 'Trấn cổ cửa ngõ cực nam của Hồ Quảng sát biên mạo Đại Việt, đảm bảo tuyến huyết mạch giao thương quan phương.',
+
+    // Phase 3: Biên giới Tây Bắc & Mặt trận Phía Bắc
+    'Hán Trung': 'Con đường yết hầu độc đạo nối liền Thiểm Tây và Tứ Xuyên qua dãy Tần Lĩnh.',
+    'Diên An': 'Cứ điểm quân sự quan trọng ở cực bắc Thiểm Tây, với địa hình Hoàng Thổ vô cùng hiểm trở, là rào chắn tự nhiên chặn phiến quân.',
+    'Túc Châu': 'Trạm kiểm soát dọc Hành lang Hà Tây (Con đường tơ lụa). Là nơi đồn trú của nhiều lực lượng kỵ binh tinh nhuệ giao tranh với các bộ lạc Mông Cổ phản loạn.',
+    'Tây Ninh': 'Thị trấn tiền đồn canh gác vùng rìa cao nguyên Thanh Tạng, cũng là trung tâm giao thương ngựa và muối khổng lồ.',
+    'Thượng Đô': 'Thủ đô mùa hè của triều Nguyên (Xanadu), nằm trên thảo nguyên hùng vĩ hùng tráng. Nơi các vị Đại Hãn thường thết đãi chư hầu.',
+    'Liêu Dương': 'Thủ phủ của Liêu Dương hành tỉnh, bao phủ toàn bộ vùng Mãn Châu và kiểm soát trực tiếp vương quốc Cao Ly.',
+    'Cát Lâm': 'Khu vực bạt ngàn rừng núi tuyết trắng cung cấp nhân sâm, hải mã và gỗ quý cho hoàng cung.',
+
+    // Phase 4: Các Tiểu Quốc Vệ Tinh (Đại Việt, Cao Ly, Nhật Bản) & Cứ điểm lẻ
+    'Diễn Châu': 'Tuyển phòng tuyến quan trọng phía nam Đại Việt trong các cuộc chiến tranh với Chiêm Thành.',
+    'Hóa Châu': 'Cựu đô châu Ô, châu Lý được sáp nhập vào Đại Việt sau cuộc hôn nhân chính trị của Huyền Trân Công chúa.',
+    'Khai Kinh': 'Thủ đô vương quốc Cao Ly. Là một trung tâm chính trị Phật giáo lớn, đồng thời chịu ảnh hưởng nặng nề bởi sự can thiệp của Mông Cổ.',
+    'Tây Kinh': 'Thành phố lớn thứ hai của Cao Ly (Bình Nhưỡng ngày nay), là một căn cứ quân sự quan trọng ở phương Bắc.',
+    'Kinh Đô': 'Kyoto. Trung tâm của quyền lực thiên hoàng Nhật Bản, hiện đang chìm trong lửa đạn của thời kỳ Nam Bắc triều.',
+    'Đồ Bàn': 'Kinh đô oai hùng của Vương quốc Chiêm Thành (Vijaya), được bao bọc bởi đồi núi và các di sản tháp Chăm linh thiêng.',
+    'Thịnh Phủ': 'Tuyến phòng thủ biển của Nhật Bản, nơi chống lại hai cuộc vây hãm quy mô lớn kinh hoàng của hải quân Mông Cổ thế kỷ trước.',
+    'Đông Kinh': 'Căn cứ hải quân trọng yếu nhất của Goryeo trên hành lang Mãn Châu.',
+    'Sơn Hải Quan': '"Thiên hạ đệ nhất quan" chưa được hình thành rực rỡ như thời Minh, nhưng vẫn là yết hầu cực kỳ hiểm ác chặn đứng lối vào Hoa Bắc từ phía đông bắc.'
+};

@@ -194,9 +194,19 @@
 const IS_LOCAL = location.protocol === 'file:';
 </script>
 <script src="china_1351.js"></script>
+<script src="lore_1351.js"></script>
 <script>
 // The GeoJSON has already been heavily smoothed topologically in node to prevent province gaps.
 const CHINA_SMOOTH = CHINA_1351;
+
+if (window.MAP_LORE_PROVINCES) {
+  CHINA_SMOOTH.features.forEach(f => {
+    const name = f.properties.NAME;
+    if (window.MAP_LORE_PROVINCES[name]) {
+      Object.assign(f.properties, window.MAP_LORE_PROVINCES[name]);
+    }
+  });
+}
 
 // === TERRAIN ICON MARKERS (scatter-based, giống thành trì) ===
 // SVG Path icons cho từng loại địa hình
@@ -356,7 +366,7 @@ const MARKERS = [
   { name:'Dương Châu',  vi:'Thương cảng Đại Vận Hà',               coords:[119.4,32.4],  type:'city', faction:'yuan' },
 
   // ═══ THIỂM TÂY (陕西) ═══
-  { name:'Phụng Nguyên', vi:'Tây An — mạch máu Quan Trung',        coords:[108.9,34.3],  type:'city', faction:'yuan' },
+  { name:'Trường An',   vi:'Phụng Nguyên lộ — mạch máu Quan Trung', coords:[108.9,34.3],  type:'city', faction:'yuan' },
   { name:'Đồng Quan',   vi:'Cửa ải vào Quan Trung',               coords:[110.3,34.6],  type:'city', faction:'yuan' },
   { name:'Hán Trung',   vi:'Yết hầu Tần-Thục',                    coords:[107.0,33.1],  type:'city', faction:'yuan' },
   { name:'Diên An',     vi:'Biên ải phía bắc Thiểm Tây',          coords:[109.5,36.6],  type:'city', faction:'yuan' },
@@ -449,6 +459,8 @@ const MARKERS = [
   { name:'Trừ Châu',     vi:'An Huy đông bộ',                     coords:[118.3,32.3],  type:'city', faction:'yuan' },
   { name:'Hoài An',      vi:'Đại Vận Hà trọng địa',               coords:[119.0,33.5],  type:'city', faction:'yuan' },
   { name:'Thọ Châu',     vi:'An Huy trung bộ',                    coords:[116.8,32.6],  type:'city', faction:'yuan' },
+
+
 
   // ═══ Cam Túc bổ sung ═══
   { name:'Túc Châu',     vi:'Tửu Tuyền — Con đường Tơ lụa',       coords:[98.5,39.7],   type:'city', faction:'yuan' },
@@ -711,7 +723,7 @@ function initMap() {
       padding: [12,16],
       textStyle: { color:'#e8e0d4', fontFamily:'Noto Serif, serif', fontSize:12 },
       formatter: p => {
-        if (p.seriesType === 'map') {
+        if (p.seriesType === 'map' || p.componentType === 'geo') {
           const f = CHINA_1351.features.find(f => f.properties.NAME === p.name);
           if (!f) return p.name;
           const pr = f.properties;
@@ -722,9 +734,13 @@ function initMap() {
             <div style="font-size:10px;color:rgba(232,224,212,.5);margin-bottom:6px">${pr.NAME}</div>
             ${badge}
             ${pr.CAPITAL?`<div style="margin-top:5px;font-size:11px">📍 ${pr.CAPITAL}</div>`:''}
-            <div style="margin-top:6px;font-size:11px;color:rgba(232,224,212,.8);line-height:1.6;max-width:280px">${pr.DESC||''}</div>`;
+            <div style="margin-top:6px;font-size:11px;color:rgba(232,224,212,.8);line-height:1.6;max-width:280px;white-space:normal;">${pr.DESC||''}</div>`;
         }
         if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
+          if (p.seriesName === 'terrain') {
+             const desc = (window.MAP_LORE_TERRAIN && window.MAP_LORE_TERRAIN[p.name]) || '';
+             return `<div style="font-size:14px;font-weight:700;color:#c9a96e">🌲 ${p.name}</div><div style="font-size:11px;color:rgba(232,224,212,.7);margin-top:4px;max-width:250px;white-space:normal;">${desc}</div>`;
+          }
           const m = MARKERS.find(m => m.name === p.name);
           if (m) {
             let typeStr = '🏰 Thành trì';
@@ -739,9 +755,11 @@ function initMap() {
               else if (isMedium) { typeStr = '🏛 Phủ / Châu thành'; color = 'rgba(232,224,212,0.9)'; }
               else { typeStr = '⛺ Tuyến hành chính dưới / Vệ'; color = '#AAA'; }
             }
+            const desc = (window.MAP_LORE_CITIES && window.MAP_LORE_CITIES[m.name]) || '';
             return `<div style="font-size:14px;font-weight:700;color:${color}">${m.name}</div>
                     <div style="font-size:10px;color:rgba(232,224,212,.5);margin-top:2px;margin-bottom:6px">${typeStr}</div>
-                    <div style="font-size:12px;color:rgba(232,224,212,.9)">${m.vi}</div>`;
+                    <div style="font-size:12px;color:rgba(232,224,212,.9)">${m.vi}</div>
+                    <div style="font-size:11px;color:rgba(232,224,212,.7);margin-top:6px;max-width:250px;white-space:normal;">${desc}</div>`;
           }
         }
         return p.name;
@@ -763,7 +781,7 @@ function initMap() {
     },
 
     series: [
-      { id: 'sc-terrain', name:'terrain', type:'scatter', coordinateSystem:'geo', data:getTerrainData(), z:5, silent:true, animation:false },
+      { id: 'sc-terrain', name:'terrain', type:'scatter', coordinateSystem:'geo', data:getTerrainData(), z:5, silent:false, animation:false },
       { id: 'sc-capitals', name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
       { id: 'sc-cities', name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
     ]
@@ -799,26 +817,40 @@ function initMap() {
 
   // Click → info panel (works on both geo layers and markers)
   chartInstance.on('click', p => {
-    if (p.componentType === 'geo') {
-      const f = CHINA_1351.features.find(f => f.properties.NAME === p.name);
+    if (p.componentType === 'geo' || p.seriesType === 'map') {
+      const f = CHINA_SMOOTH.features.find(f => f.properties.NAME === p.name);
       if (f) showInfo(f.properties);
-    } else if (p.componentType === 'series') {
-      const marker = MARKERS.find(m => m.name === p.name);
-      if (marker) {
-        let markerColor = '#fff';
-        if (marker.faction === 'yuan') markerColor = '#C9A96E';
-        if (marker.faction === 'goryeo') markerColor = '#4682B4';
-        if (marker.faction === 'japan') markerColor = '#CD5C5C';
-        if (marker.faction === 'daiviet') markerColor = '#228B22';
-        if (marker.faction === 'champa') markerColor = '#DAA520';
-        
+    } else if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
+      if (p.seriesName === 'terrain') {
+        const desc = (window.MAP_LORE_TERRAIN && window.MAP_LORE_TERRAIN[p.name]) || 'Khu vực địa hình đặc trưng, đóng vai trò bản lề trong giao thông hoặc phòng thủ tự nhiên.';
         showInfo({
-          NAME_ZH: '', 
-          NAME_VI: marker.name,
-          TYPE: marker.type,
-          DESC: marker.vi,
-          COLOR: markerColor
+            NAME: p.name,
+            NAME_ZH: p.name,
+            NAME_VI: 'Địa hình: ' + p.name,
+            TYPE: 'terrain',
+            COLOR: '#8B5A2B',
+            DESC: desc
         });
+      } else {
+        const marker = MARKERS.find(m => m.name === p.name);
+        if (marker) {
+          let markerColor = '#fff';
+          if (marker.faction === 'yuan') markerColor = '#C9A96E';
+          if (marker.faction === 'goryeo') markerColor = '#4682B4';
+          if (marker.faction === 'japan') markerColor = '#CD5C5C';
+          if (marker.faction === 'daiviet') markerColor = '#228B22';
+          if (marker.faction === 'champa') markerColor = '#DAA520';
+          
+          const desc = (window.MAP_LORE_CITIES && window.MAP_LORE_CITIES[marker.name]) || marker.vi || 'Thành trì/Cứ điểm trọng yếu trên bản đồ Nguyên triều năm 1351.';
+
+          showInfo({
+            NAME_ZH: marker.name, 
+            NAME_VI: marker.name,
+            TYPE: marker.type,
+            DESC: desc,
+            COLOR: markerColor
+          });
+        }
       }
     }
   });
@@ -845,6 +877,7 @@ function showInfo(p) {
   else if (p.TYPE === 'province') { typeEl.textContent = '🗺️ Hành tỉnh Nguyên'; typeEl.className = 'info-type province'; }
   else if (p.TYPE === 'city') { typeEl.textContent = '📍 Thành trì'; typeEl.className = 'info-type state'; }
   else if (p.TYPE === 'capital') { typeEl.textContent = '👑 Thủ đô / Kinh đô'; typeEl.className = 'info-type state'; }
+  else if (p.TYPE === 'terrain') { typeEl.textContent = '⛰️ Địa hình'; typeEl.className = 'info-type state'; }
   else { typeEl.textContent = '🏛 Quốc gia / Lãnh địa'; typeEl.className = 'info-type state'; }
 
   const capR = document.getElementById('i-cap-r');
