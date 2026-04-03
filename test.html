@@ -198,161 +198,119 @@ const IS_LOCAL = location.protocol === 'file:';
 // The GeoJSON has already been heavily smoothed topologically in node to prevent province gaps.
 const CHINA_SMOOTH = CHINA_1351;
 
-// === TERRAIN TEXTURE GENERATOR (Cartographic Icon Patterns) ===
-function createTerrainCanvas(baseColor, type) {
-  const tile = 128; // Tile lớn, dày đặc icon
-  const c = document.createElement('canvas');
-  c.width = tile; c.height = tile;
-  const ctx = c.getContext('2d');
-  const r = (hex, i) => parseInt(hex.slice(i, i+2), 16);
-  const br = r(baseColor,1), bg = r(baseColor,3), bb = r(baseColor,5);
-
-  // Nền cơ bản
-  ctx.fillStyle = baseColor;
-  ctx.fillRect(0, 0, tile, tile);
-
-  // Màu ký hiệu
-  const iconColor = `rgba(${Math.min(255,br+50)},${Math.min(255,bg+45)},${Math.min(255,bb+40)},0.45)`;
-  const iconColorDark = `rgba(${Math.max(0,br-30)},${Math.max(0,bg-30)},${Math.max(0,bb-25)},0.3)`;
-  const iconColorLight = `rgba(${Math.min(255,br+80)},${Math.min(255,bg+70)},${Math.min(255,bb+60)},0.25)`;
-
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  if (type === 'mountain') {
-    // ⛰ Núi: Vài đỉnh tam giác nhọn (giảm độ dày đặc)
-    const drawPeak = (cx, cy, w, h) => {
-      // Bóng đổ
-      ctx.fillStyle = iconColorDark;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - h);
-      ctx.lineTo(cx + w/2 + 1, cy + 1);
-      ctx.lineTo(cx - w/2 + 1, cy + 1);
-      ctx.closePath();
-      ctx.fill();
-      // Đỉnh sáng
-      ctx.fillStyle = iconColor;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - h);
-      ctx.lineTo(cx + w/2, cy);
-      ctx.lineTo(cx - w/2, cy);
-      ctx.closePath();
-      ctx.fill();
-      // Nét viền
-      ctx.strokeStyle = iconColor;
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
-      // Đỉnh tuyết
-      ctx.fillStyle = `rgba(255,255,255,0.22)`;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - h);
-      ctx.lineTo(cx + w*0.15, cy - h*0.5);
-      ctx.lineTo(cx - w*0.15, cy - h*0.5);
-      ctx.closePath();
-      ctx.fill();
-    };
-    // Hàng sau
-    drawPeak(20, 30, 20, 18);
-    drawPeak(80, 26, 18, 16);
-    // Hàng giữa
-    drawPeak(45, 60, 24, 22);
-    drawPeak(105, 55, 22, 20);
-    // Hàng trước
-    drawPeak(25, 95, 28, 25);
-    drawPeak(85, 90, 26, 24);
-
-  } else if (type === 'plateau') {
-    // 〰 Cao nguyên: Ít đường đồng mức + sỏi đá vừa phải
-    ctx.strokeStyle = iconColor;
-    ctx.lineWidth = 1;
-    for (let row = 0; row < 5; row++) {
-      const y = 15 + row * 24;
-      const shift = (row % 2 === 0) ? 3 : -3;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.bezierCurveTo(tile*0.2, y + shift, tile*0.4, y - shift, tile*0.6, y + shift*0.5);
-      ctx.bezierCurveTo(tile*0.8, y - shift*0.8, tile*0.9, y + shift*0.3, tile, y - 1);
-      ctx.stroke();
-    }
-    // Sỏi đá
-    ctx.fillStyle = iconColorDark;
-    const pebbles = [
-      [20,20],[80,25],[40,40],[100,50],[30,70],[90,85],[60,105],[110,110]
-    ];
-    pebbles.forEach(([dx,dy]) => {
-      ctx.beginPath();
-      ctx.arc(dx, dy, 1.2 + Math.random()*0.8, 0, Math.PI*2);
-      ctx.fill();
-    });
-    // Vết nứt nhỏ
-    ctx.strokeStyle = iconColorLight;
-    ctx.lineWidth = 0.5;
-    [[20,40,35,45],[60,60,75,58]].forEach(([x1,y1,x2,y2]) => {
-      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    });
-
-  } else {
-    // 🌾 Đồng bằng: Ít bụi cỏ, phân tán
-    ctx.strokeStyle = iconColor;
-    ctx.lineWidth = 0.8;
-    const grass = [
-      [20,20],[80,15],[45,45],[105,40],[30,75],[90,70],[60,105],[110,100],
-      [50,20],[15,55],[85,95],[40,85],[115,25],[75,55],[10,100]
-    ];
-    grass.forEach(([gx,gy]) => {
-      ctx.beginPath();
-      ctx.moveTo(gx, gy); ctx.lineTo(gx-1.5, gy-4);
-      ctx.moveTo(gx, gy); ctx.lineTo(gx+0.5, gy-5);
-      ctx.moveTo(gx, gy); ctx.lineTo(gx+2, gy-3);
-      ctx.stroke();
-    });
-    // Chấm hoa nhỏ rải thưa
-    ctx.fillStyle = iconColorLight;
-    [
-      [35,30],[65,25],[95,50],[25,65],[55,90],[105,80],[80,115]
-    ].forEach(([dx,dy]) => {
-      ctx.beginPath();
-      ctx.arc(dx, dy, 1.2, 0, Math.PI*2);
-      ctx.fill();
-    });
-  }
-
-  return c;
-}
-
-// Pre-generate terrain canvases per region type
-const TERRAIN_TYPES = {
-  '#C9A96E': 'plains',      // Yuan
-  '#8B7355': 'plateau',     // Chagatai / Sichuan
-  '#A0522D': 'mountain',    // Tibet
-  '#32CD32': 'plains',      // Sukhothai
-  '#4682B4': 'mountain',    // Goryeo
-  '#6B8E23': 'plains',      // Khmer
-  '#CD5C5C': 'mountain',    // Japan
-  '#228B22': 'plains',      // Dai Viet
-  '#DAA520': 'plains',      // Champa
+// === TERRAIN ICON MARKERS (scatter-based, giống thành trì) ===
+// SVG Path icons cho từng loại địa hình
+const TERRAIN_ICONS = {
+  // ⛰ Núi — tam giác nhọn có đỉnh tuyết
+  mountain: 'path://M12 2L22 20H2L12 2Z M12 6L15 13H9L12 6Z',
+  // 〰 Cao nguyên — hình thang phẳng đỉnh
+  plateau: 'path://M4 18L8 6H16L20 18Z',
+  // 🌾 Đồng bằng — cỏ/lúa 3 nhánh
+  plains: 'path://M12 20V10 M12 10C12 6 8 4 6 2 M12 10C12 6 16 4 18 2 M12 14C10 12 7 12 5 11 M12 14C14 12 17 12 19 11',
+  // 🏜 Sa mạc — cồn cát
+  desert: 'path://M2 16Q6 10 12 14Q18 10 22 16Z',
+  // 🌲 Rừng — hai cây thông
+  forest: 'path://M8 18V14 M8 14L4 14L8 8L6 8L8 4L10 8L8 8L12 14L8 14Z M16 18V14 M16 14L12 14L16 8L14 8L16 4L18 8L16 8L20 14L16 14Z',
 };
-const terrainCanvasCache = {};
-function getTerrainCanvas(color, name) {
-  const cacheKey = color + '_' + (name || 'none');
-  if (!terrainCanvasCache[cacheKey]) {
-    let type = TERRAIN_TYPES[color] || 'plains';
-    
-    // Đa dạng hóa địa hình cho Đại Nguyên dựa vào tên Hành Tỉnh
-    if (color === '#C9A96E' && name) {
-      const n = name.toLowerCase();
-      if (n.includes('tứ xuyên') || n.includes('vân nam') || n.includes('cam túc') || n.includes('lĩnh bắc')) {
-        type = 'plateau';
-      } else if (n.includes('thiểm tây') || n.includes('sơn tây')) {
-        type = 'mountain';
-      } else {
-        type = 'plains';
-      }
-    }
-    terrainCanvasCache[cacheKey] = createTerrainCanvas(color, type);
-  }
-  return terrainCanvasCache[cacheKey];
-}
+
+// Dữ liệu địa hình — tọa độ thực tế, hiển thị như marker
+const TERRAIN_MARKERS = [
+  // ═══ ĐẠI NGUYÊN — Đồng bằng Hoa Bắc ═══
+  { coords:[116.8,36.5], terrain:'plains', label:'Hoa Bắc' },
+  { coords:[114.5,35.5], terrain:'plains' },
+  { coords:[118.2,34.8], terrain:'plains' },
+  { coords:[116.0,33.5], terrain:'plains' },
+
+  // ═══ ĐẠI NGUYÊN — Sơn Tây / Thiểm Tây (núi) ═══
+  { coords:[112.0,38.5], terrain:'mountain', label:'Thái Hành Sơn' },
+  { coords:[110.5,35.0], terrain:'mountain' },
+  { coords:[109.0,34.8], terrain:'mountain', label:'Tần Lĩnh' },
+  { coords:[107.5,33.5], terrain:'mountain' },
+
+  // ═══ ĐẠI NGUYÊN — Mông Cổ thảo nguyên ═══
+  { coords:[110.0,44.0], terrain:'plains', label:'Thảo nguyên' },
+  { coords:[105.0,46.0], terrain:'plains' },
+  { coords:[115.0,45.0], terrain:'plains' },
+
+  // ═══ ĐẠI NGUYÊN — Cam Túc / Hà Tây (cao nguyên + sa mạc) ═══
+  { coords:[100.0,40.5], terrain:'desert', label:'Sa mạc Gobi' },
+  { coords:[96.0,41.0],  terrain:'desert' },
+  { coords:[103.0,37.5], terrain:'plateau', label:'Hoàng Thổ' },
+  { coords:[101.5,37.0], terrain:'plateau' },
+
+  // ═══ ĐẠI NGUYÊN — Tứ Xuyên (bồn địa + núi) ═══
+  { coords:[104.5,31.0], terrain:'plains', label:'Bồn địa Tứ Xuyên' },
+  { coords:[103.0,30.0], terrain:'mountain' },
+  { coords:[102.0,29.0], terrain:'mountain' },
+
+  // ═══ ĐẠI NGUYÊN — Vân Nam (cao nguyên) ═══
+  { coords:[101.0,25.5], terrain:'plateau', label:'Vân Quý cao nguyên' },
+  { coords:[103.5,24.5], terrain:'plateau' },
+
+  // ═══ ĐẠI NGUYÊN — Giang Nam (rừng + đồng bằng) ═══
+  { coords:[118.5,31.0], terrain:'plains', label:'Trường Giang' },
+  { coords:[120.0,29.5], terrain:'forest' },
+  { coords:[116.5,28.0], terrain:'forest' },
+  { coords:[112.5,28.5], terrain:'plains' },
+
+  // ═══ ĐẠI NGUYÊN — Lĩnh Nam ═══
+  { coords:[113.0,24.0], terrain:'mountain', label:'Ngũ Lĩnh' },
+  { coords:[110.5,23.5], terrain:'forest' },
+  { coords:[108.0,23.0], terrain:'forest' },
+
+  // ═══ ĐẠI NGUYÊN — Đông Bắc (Liêu Dương) ═══
+  { coords:[124.0,42.5], terrain:'forest', label:'Trường Bạch Sơn' },
+  { coords:[122.0,44.0], terrain:'plains' },
+  { coords:[126.0,45.5], terrain:'forest' },
+
+  // ═══ THỔ PHỒN (Tây Tạng) ═══
+  { coords:[88.0,32.0], terrain:'mountain', label:'Himalaya' },
+  { coords:[84.0,30.0], terrain:'mountain' },
+  { coords:[92.0,34.0], terrain:'plateau', label:'Thanh Tạng' },
+  { coords:[96.0,35.0], terrain:'plateau' },
+  { coords:[80.0,32.0], terrain:'mountain' },
+
+  // ═══ CAO LY ═══
+  { coords:[127.5,37.5], terrain:'mountain' },
+  { coords:[128.5,36.0], terrain:'mountain' },
+
+  // ═══ NHẬT BẢN ═══
+  { coords:[136.5,35.5], terrain:'mountain' },
+  { coords:[140.0,37.0], terrain:'mountain' },
+
+  // ═══ ĐẠI VIỆT ═══
+  { coords:[106.5,20.0], terrain:'forest' },
+  { coords:[105.0,22.0], terrain:'mountain' },
+
+  // ═══ ĐÔNG NAM Á ═══
+  { coords:[100.0,16.0], terrain:'forest' },
+  { coords:[104.5,12.5], terrain:'plains' },
+];
+
+// Hàm tạo data cho scatter series địa hình
+const getTerrainData = () => layerState.terrain ? TERRAIN_MARKERS.map(t => {
+  const icon = TERRAIN_ICONS[t.terrain] || TERRAIN_ICONS.plains;
+  const colors = {
+    mountain: { fill:'rgba(160,120,80,0.7)', border:'rgba(200,170,130,0.8)' },
+    plateau:  { fill:'rgba(140,115,85,0.6)', border:'rgba(180,155,120,0.7)' },
+    plains:   { fill:'rgba(120,150,80,0.5)', border:'rgba(160,190,110,0.6)' },
+    desert:   { fill:'rgba(200,180,120,0.6)', border:'rgba(230,210,160,0.7)' },
+    forest:   { fill:'rgba(60,120,50,0.6)',  border:'rgba(90,150,70,0.7)' },
+  };
+  const c = colors[t.terrain] || colors.plains;
+  return {
+    name: t.label || '',
+    value: [...t.coords, 8],
+    symbol: icon,
+    symbolSize: t.terrain === 'mountain' ? 18 : 14,
+    itemStyle: { color: c.fill, borderColor: c.border, borderWidth: 1, shadowColor:'rgba(0,0,0,0.3)', shadowBlur:2 },
+    label: t.label ? {
+      show: true, formatter: t.label, position: 'bottom',
+      color: 'rgba(200,180,150,0.6)', fontSize: 9, fontFamily: 'Noto Serif',
+      fontStyle: 'italic', textBorderColor: 'rgba(10,12,16,0.8)', textBorderWidth: 2
+    } : { show: false }
+  };
+}) : [];
 
 // === LAYER VISIBILITY STATE ===
 const layerState = { states: true, provinces: true, markers: true, terrain: true };
@@ -639,9 +597,7 @@ function initMap() {
     const c = p.COLOR || '#555';
     const isRebel = p.TYPE === 'rebel';
     let areaFill;
-    if (layerState.terrain && !isRebel && c.startsWith('#')) {
-      areaFill = { image: getTerrainCanvas(c, p.NAME), repeat: 'repeat' };
-    } else if (isRebel) {
+    if (isRebel) {
       areaFill = { type:'linear', x:0,y:0,x2:1,y2:1, colorStops:[{offset:0,color:c},{offset:1,color:alpha(c,.6)}] };
     } else {
       areaFill = c;
@@ -674,13 +630,9 @@ function initMap() {
   // Build region styles for provinces (styled as administrative seals/badges)
   provRegions = provFeatures.map(f => {
     const p = f.properties;
-    let areaFill = 'transparent';
-    if (layerState.terrain) {
-      areaFill = { image: getTerrainCanvas('#C9A96E', p.NAME), repeat: 'repeat' };
-    }
     return {
       name: p.NAME,
-      itemStyle: { areaColor: areaFill, borderColor: 'transparent', borderWidth: 0 },
+      itemStyle: { areaColor: 'transparent', borderColor: 'transparent', borderWidth: 0 },
       emphasis: { 
         itemStyle: { areaColor: 'rgba(201,169,110,.05)' }, 
         label: { 
@@ -717,10 +669,7 @@ function initMap() {
     const isCaoLy = p.NAME && (p.NAME.includes('Cao Ly') || p.NAME.includes('Goryeo') || p.NAME.includes('高丽'));
     const c = p.COLOR || '#555';
     
-    let areaFill = c;
-    if (layerState.terrain && c.startsWith('#')) {
-      areaFill = { image: getTerrainCanvas(c, p.NAME), repeat: 'repeat' };
-    }
+    const areaFill = c;
     
     return {
       name: p.NAME,
@@ -808,12 +757,13 @@ function initMap() {
       scaleLimit: { min:2, max:30 },
       aspectScale: 0.85,
       nameProperty: 'NAME',
-      itemStyle: { areaColor: layerState.terrain ? {image: createTerrainCanvas('#1a1f2e','plains'), repeat:'repeat'} : '#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
+      itemStyle: { areaColor: '#1a1f2e', borderColor:'rgba(255,255,255,.1)', borderWidth:0.5 },
       emphasis: { label:{show:true,color:'#fff'}, itemStyle:{areaColor:'#2a3040'} },
       regions: allRegions
     },
 
     series: [
+      { id: 'sc-terrain', name:'terrain', type:'scatter', coordinateSystem:'geo', data:getTerrainData(), z:5, silent:true, animation:false },
       { id: 'sc-capitals', name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
       { id: 'sc-cities', name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
     ]
@@ -838,6 +788,7 @@ function initMap() {
         layerState.zoomMarkers = showMarkers;
         chartInstance.setOption({
           series: [
+            { id: 'sc-terrain', data: showMarkers ? getTerrainData() : [] },
             { id: 'sc-capitals', data: (showMarkers && layerState.markers) ? getCapData() : [] },
             { id: 'sc-cities', data: (showMarkers && layerState.markers) ? getCityData() : [] }
           ]
