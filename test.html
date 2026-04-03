@@ -198,92 +198,149 @@ const IS_LOCAL = location.protocol === 'file:';
 // The GeoJSON has already been heavily smoothed topologically in node to prevent province gaps.
 const CHINA_SMOOTH = CHINA_1351;
 
-// === TERRAIN TEXTURE GENERATOR ===
+// === TERRAIN TEXTURE GENERATOR (Cartographic Icon Patterns) ===
 function createTerrainCanvas(baseColor, type) {
+  const tile = 128; // Tile lớn, dày đặc icon
   const c = document.createElement('canvas');
-  const size = 512; // Tăng kích thước để vân đỡ bị lặp lại
-  c.width = size; c.height = size;
+  c.width = tile; c.height = tile;
   const ctx = c.getContext('2d');
   const r = (hex, i) => parseInt(hex.slice(i, i+2), 16);
   const br = r(baseColor,1), bg = r(baseColor,3), bb = r(baseColor,5);
 
   // Nền cơ bản
   ctx.fillStyle = baseColor;
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(0, 0, tile, tile);
 
-  const rng = (s) => { s = Math.sin(s) * 43758.5453; return s - Math.floor(s); };
+  // Màu ký hiệu
+  const iconColor = `rgba(${Math.min(255,br+50)},${Math.min(255,bg+45)},${Math.min(255,bb+40)},0.45)`;
+  const iconColorDark = `rgba(${Math.max(0,br-30)},${Math.max(0,bg-30)},${Math.max(0,bb-25)},0.3)`;
+  const iconColorLight = `rgba(${Math.min(255,br+80)},${Math.min(255,bg+70)},${Math.min(255,bb+60)},0.25)`;
 
-  // 1. Tạo các đốm địa hình hữu cơ (Topographic contours)
-  const numLayers = type === 'mountain' ? 180 : (type === 'plateau' ? 120 : 80);
-  for (let i = 0; i < numLayers; i++) {
-    const x = rng(i * 1.5) * size;
-    const y = rng(i * 2.3 + 5) * size;
-    const sz = rng(i * 3.7 + 2) * 80 + 30; 
-    
-    // Tăng giảm cường độ sáng tối của đốm để mô phỏng cao độ
-    const v = (rng(i * 4.9 + 3) - 0.5) * (type === 'mountain' ? 70 : 40);
-    const nr = Math.max(0, Math.min(255, br + v));
-    const ng = Math.max(0, Math.min(255, bg + v));
-    const nb = Math.max(0, Math.min(255, bb + v));
-    
-    ctx.fillStyle = `rgba(${nr|0},${ng|0},${nb|0},0.35)`;
-    
-    // Vẽ khối hữu cơ thay vì ellipse đơn điệu
-    ctx.beginPath();
-    ctx.moveTo(x + sz, y);
-    for (let a = 0; a < Math.PI * 2; a += 0.4) {
-      const r_modifier = sz * (0.6 + 0.4 * rng(i + a));
-      ctx.lineTo(x + Math.cos(a)*r_modifier, y + Math.sin(a)*r_modifier);
-    }
-    ctx.closePath();
-    ctx.fill();
-    
-    // Viền nhẹ tạo đường đồng mức
-    ctx.strokeStyle = `rgba(${nr|0},${ng|0},${nb|0},0.6)`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
 
-  // 2. Dãy núi / Đất gồ ghề (Ridges)
-  if (type === 'mountain' || type === 'plateau') {
-    ctx.strokeStyle = `rgba(${Math.min(255,br+60)},${Math.min(255,bg+55)},${Math.min(255,bb+50)},0.35)`;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = type === 'mountain' ? 4.5 : 2.5;
-    
-    const numRidges = type === 'mountain' ? 25 : 12;
-    for (let i = 0; i < numRidges; i++) {
+  if (type === 'mountain') {
+    // ⛰ Núi: Nhiều đỉnh tam giác nhọn xếp chồng lấp nhau
+    const drawPeak = (cx, cy, w, h) => {
+      // Bóng đổ
+      ctx.fillStyle = iconColorDark;
       ctx.beginPath();
-      let x = rng(i * 11) * size;
-      let y = rng(i * 17 + 10) * size;
-      ctx.moveTo(x, y);
-      
-      // Vẽ các phân đoạn gãy khúc
-      for (let j = 0; j < 6; j++) {
-        let dx = (rng(i * 13 + j * 7) - 0.5) * 110;
-        let dy = (rng(i * 19 + j * 11) - 0.5) * 110;
-        
-        ctx.lineTo(x + dx, y + dy);
-        x += dx; y += dy;
-      }
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + w/2 + 1, cy + 1);
+      ctx.lineTo(cx - w/2 + 1, cy + 1);
+      ctx.closePath();
+      ctx.fill();
+      // Đỉnh sáng
+      ctx.fillStyle = iconColor;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + w/2, cy);
+      ctx.lineTo(cx - w/2, cy);
+      ctx.closePath();
+      ctx.fill();
+      // Nét viền
+      ctx.strokeStyle = iconColor;
+      ctx.lineWidth = 0.6;
       ctx.stroke();
-      
-      // Bóng đổ giả 3D cho dãy núi
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 10;
-      ctx.shadowOffsetX = 4;
-      ctx.shadowOffsetY = 4;
-      ctx.stroke();
-      ctx.shadowColor = 'transparent'; // reset
-    }
-  }
+      // Đỉnh tuyết
+      ctx.fillStyle = `rgba(255,255,255,0.22)`;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + w*0.15, cy - h*0.5);
+      ctx.lineTo(cx - w*0.15, cy - h*0.5);
+      ctx.closePath();
+      ctx.fill();
+    };
+    // Hàng sau (xa) — nhỏ
+    drawPeak(14, 30, 14, 13);
+    drawPeak(42, 26, 12, 11);
+    drawPeak(72, 28, 13, 12);
+    drawPeak(100, 32, 11, 10);
+    drawPeak(120, 26, 10, 9);
+    // Hàng giữa — vừa
+    drawPeak(28, 52, 20, 20);
+    drawPeak(58, 48, 18, 18);
+    drawPeak(88, 54, 22, 22);
+    drawPeak(112, 50, 16, 15);
+    // Hàng trước (gần) — lớn
+    drawPeak(8, 78, 18, 16);
+    drawPeak(36, 82, 26, 28);
+    drawPeak(68, 86, 24, 26);
+    drawPeak(98, 80, 20, 22);
+    drawPeak(118, 88, 16, 14);
+    // Hàng cuối — lớn nhất, bị cắt dưới
+    drawPeak(20, 110, 28, 25);
+    drawPeak(54, 114, 22, 20);
+    drawPeak(84, 108, 26, 24);
+    drawPeak(110, 116, 20, 18);
 
-  // 3. Phủ bóng mờ toàn texture
-  const grad = ctx.createRadialGradient(size/2, size/2, size*0.2, size/2, size/2, size*0.8);
-  grad.addColorStop(0, `rgba(${Math.min(255,br+30)},${Math.min(255,bg+25)},${Math.min(255,bb+20)},0.1)`);
-  grad.addColorStop(1, `rgba(${Math.max(0,br-20)},${Math.max(0,bg-20)},${Math.max(0,bb-15)},0.15)`);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, size, size);
+  } else if (type === 'plateau') {
+    // 〰 Cao nguyên: Nhiều đường đồng mức + sỏi đá dày đặc
+    ctx.strokeStyle = iconColor;
+    ctx.lineWidth = 1;
+    for (let row = 0; row < 9; row++) {
+      const y = 6 + row * 14;
+      const shift = (row % 2 === 0) ? 3 : -3;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.bezierCurveTo(tile*0.2, y + shift, tile*0.4, y - shift, tile*0.6, y + shift*0.5);
+      ctx.bezierCurveTo(tile*0.8, y - shift*0.8, tile*0.9, y + shift*0.3, tile, y - 1);
+      ctx.stroke();
+    }
+    // Sỏi đá rải dày
+    ctx.fillStyle = iconColorDark;
+    const pebbles = [
+      [6,10],[22,6],[38,14],[54,8],[70,12],[86,6],[102,10],[118,8],
+      [14,28],[30,34],[46,26],[62,32],[78,28],[94,36],[110,30],
+      [8,50],[24,46],[40,52],[56,48],[72,54],[88,46],[104,50],[120,48],
+      [16,68],[32,72],[48,66],[64,70],[80,68],[96,74],[112,66],
+      [6,88],[22,84],[38,90],[54,86],[70,92],[86,84],[102,88],[118,86],
+      [14,106],[30,110],[46,104],[62,108],[78,106],[94,112],[110,104]
+    ];
+    pebbles.forEach(([dx,dy]) => {
+      ctx.beginPath();
+      ctx.arc(dx, dy, 1.2 + Math.random()*0.8, 0, Math.PI*2);
+      ctx.fill();
+    });
+    // Vết nứt nhỏ
+    ctx.strokeStyle = iconColorLight;
+    ctx.lineWidth = 0.5;
+    [[20,40,35,45],[60,60,75,58],[100,20,108,28],[40,95,55,90],[90,100,105,95]].forEach(([x1,y1,x2,y2]) => {
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    });
+
+  } else {
+    // 🌾 Đồng bằng: Nhiều bụi cỏ rải dày đặc
+    ctx.strokeStyle = iconColor;
+    ctx.lineWidth = 0.8;
+    const grass = [
+      [8,8],[24,12],[40,6],[56,14],[72,8],[88,12],[104,6],[120,10],
+      [16,24],[32,28],[48,22],[64,26],[80,24],[96,30],[112,22],
+      [6,38],[22,42],[38,36],[54,40],[70,38],[86,44],[102,36],[118,40],
+      [14,54],[30,58],[46,52],[62,56],[78,54],[94,60],[110,52],
+      [8,68],[24,72],[40,66],[56,70],[72,68],[88,74],[104,66],[120,70],
+      [16,84],[32,88],[48,82],[64,86],[80,84],[96,90],[112,82],
+      [6,98],[22,102],[38,96],[54,100],[70,98],[86,104],[102,96],[118,100],
+      [14,114],[30,118],[46,112],[62,116],[78,114],[94,120],[110,112]
+    ];
+    grass.forEach(([gx,gy]) => {
+      ctx.beginPath();
+      ctx.moveTo(gx, gy); ctx.lineTo(gx-2, gy-5);
+      ctx.moveTo(gx, gy); ctx.lineTo(gx+1, gy-6);
+      ctx.moveTo(gx, gy); ctx.lineTo(gx+3, gy-4);
+      ctx.stroke();
+    });
+    // Chấm hoa nhỏ rải thưa
+    ctx.fillStyle = iconColorLight;
+    [
+      [20,18],[52,34],[84,16],[116,50],[36,62],[68,78],[100,44],
+      [12,90],[44,106],[76,94],[108,110],[28,46],[60,8],[92,66]
+    ].forEach(([dx,dy]) => {
+      ctx.beginPath();
+      ctx.arc(dx, dy, 1.2, 0, Math.PI*2);
+      ctx.fill();
+    });
+  }
 
   return c;
 }
