@@ -542,14 +542,39 @@ function initMap() {
     };
   });
 
-  // Build region styles for provinces — label only (no borders)
+  // Build region styles for provinces (styled as administrative seals/badges)
   provRegions = provFeatures.map(f => {
     const p = f.properties;
     return {
       name: p.NAME,
       itemStyle: { areaColor: 'transparent', borderColor: 'transparent', borderWidth: 0 },
-      emphasis: { itemStyle: { areaColor: 'rgba(201,169,110,.08)' }, label: { show:true, color:'#C9A96E', fontSize:13, fontWeight:'bold' } },
-      label: { show: true, formatter: p.NAME_VI || p.NAME_ZH, color: 'rgba(201,169,110,.45)', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: 500 }
+      emphasis: { 
+        itemStyle: { areaColor: 'rgba(201,169,110,.05)' }, 
+        label: { 
+          show: true, 
+          color: '#0a0c10', 
+          backgroundColor: '#C9A96E',
+          borderColor: '#fff',
+          fontWeight: 'bold',
+          shadowColor: 'rgba(201,169,110,.6)',
+          shadowBlur: 10
+        } 
+      },
+      label: { 
+        show: true, 
+        formatter: p.NAME_VI || p.NAME_ZH, 
+        color: 'rgba(232, 224, 212, 0.85)', 
+        fontSize: 10, 
+        fontFamily: 'Noto Serif, serif', 
+        backgroundColor: 'rgba(15, 18, 25, 0.75)',
+        borderColor: 'rgba(201, 169, 110, 0.35)', 
+        borderWidth: 1, 
+        borderRadius: 3, 
+        padding: [4, 7],
+        shadowColor: 'rgba(0, 0, 0, 0.5)',
+        shadowBlur: 5,
+        shadowOffsetY: 2
+      }
     };
   });
 
