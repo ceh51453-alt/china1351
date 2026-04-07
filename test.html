@@ -599,9 +599,14 @@ const MARKERS = [
 
 
 // Generative helpers for markers
-const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'path://M5 0L10 5L5 10L0 5Z',symbolSize:16,itemStyle:{color:'#FFDF00',borderColor:'#fff',borderWidth:2,shadowColor:'rgba(0,0,0,0.8)',shadowBlur:6},label:{show:true,formatter:m.name,position:'right',color:'#FFDF00',fontSize:14,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#111',textBorderWidth:3}})) : [];
+const getCapData = () => layerState.markers ? MARKERS.filter(m=>m.type==='capital').map(m=>({name:m.name,value:[...m.coords,10],symbol:'image://assets/icon_capital.png',symbolSize:[38,38],label:{show:true,formatter:m.name,position:'right',color:'#FFDF00',fontSize:15,fontFamily:'Noto Serif',fontWeight:'bold',textBorderColor:'#111',textBorderWidth:3,textShadowColor:'rgba(0,0,0,0.8)',textShadowBlur:6,offset:[0,-6]}})) : [];
 
-const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type !== 'capital').map(m => {
+const getCityData = (lodLevel = 2) => layerState.markers ? MARKERS.filter(m=>m.type !== 'capital').filter(m => {
+  if (lodLevel === 2) return true;
+  const isLarge = ['Hàng Châu', 'Khai Phong', 'Tuyền Châu', 'Bình Giang', 'Quảng Châu', 'Lạc Dương', 'Trường An', 'Thành Đô', 'Đại Đồng', 'Cát Lâm', 'Liêu Dương'].includes(m.name);
+  if (lodLevel === 1) return isLarge;
+  return false;
+}).map(m => {
   let subType = m.type;
   
   if (subType === 'city') {
@@ -623,19 +628,17 @@ const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type !== 'cap
   let labelFontSize = 10;
   let labelColor = '#FFF';
 
-  if (subType === 'large_city') { // Đại thành (Hình vuông/Chữ nhật viền vàng lớn)
-    symbol = 'rect'; symbolSize = 10; 
-    color = '#111'; borderColor = '#C9A96E'; borderWidth = 2; 
-    labelFontSize = 12; labelColor = '#e8e0d4';
-  } else if (subType === 'fort') { // Cửa ải / Trấn (Hình tam giác đỏ / quân sự)
-    symbol = 'triangle'; symbolSize = 9; 
-    color = '#CD5C5C'; borderColor = '#fff'; borderWidth = 1.5; 
-    labelFontSize = 11;
-  } else if (subType === 'medium_city') { // Phủ/Châu (Hình tròn viền kép)
-    symbol = 'circle'; symbolSize = 7.5; 
-    color = 'rgba(232,224,212,0.85)'; borderColor = '#333'; borderWidth = 2; 
-    labelFontSize = 11;
-  } else { // Tuyến hành chính nhỏ (Đốm nhỏ mờ)
+  let offset = [0, 0];
+  if (subType === 'large_city') { // Đại thành
+    symbol = 'image://assets/icon_large_city.png'; symbolSize = [28, 28]; 
+    labelFontSize = 13; labelColor = '#e8e0d4'; offset = [0, -6];
+  } else if (subType === 'fort') { // Cửa ải / Trấn
+    symbol = 'image://assets/icon_fort.png'; symbolSize = [20, 20]; 
+    labelFontSize = 11; labelColor = '#CD5C5C'; offset = [0, -4];
+  } else if (subType === 'medium_city') { // Phủ/Châu
+    symbol = 'image://assets/icon_medium_city.png'; symbolSize = [16, 16]; 
+    labelFontSize = 11; labelColor = 'rgba(232,224,212,0.9)'; offset = [0, -3];
+  } else { // Tuyến hành chính nhỏ
     symbol = 'circle'; symbolSize = 5; 
     color = '#999'; borderColor = '#222'; borderWidth = 1; 
     labelFontSize = 10; labelColor = 'rgba(255,255,255,0.7)';
@@ -647,7 +650,7 @@ const getCityData = () => layerState.markers ? MARKERS.filter(m=>m.type !== 'cap
     symbol: symbol,
     symbolSize: symbolSize,
     itemStyle: { color, borderColor, borderWidth, shadowColor:'rgba(0,0,0,0.6)', shadowBlur:3 },
-    label: { show:true, formatter: m.name, position:'right', color:labelColor, fontSize:labelFontSize, fontFamily:'Noto Serif', fontWeight:'600', textBorderColor:'#111', textBorderWidth:2.5 }
+    label: { show:true, formatter: m.name, position:'right', color:labelColor, fontSize:labelFontSize, fontFamily:'Noto Serif', fontWeight:'600', textBorderColor:'#111', textBorderWidth:2.5, textShadowColor:'rgba(0,0,0,0.8)', textShadowBlur:4, offset: offset }
   };
 }) : [];
 
@@ -898,8 +901,8 @@ function initMap() {
 
   chartInstance.setOption(option, true);
   
-  // Track dynamic zoom visibility
-  layerState.zoomMarkers = true;
+  // Track dynamic zoom visibility (LOD Level)
+  layerState.lodLevel = 2; // Khởi đầu load map => zoom 4.5 => level 2
 
   // Zoom threshold for showing markers
   chartInstance.on('georoam', function(params) {
@@ -908,16 +911,18 @@ function initMap() {
       if (!opt.geo || !opt.geo[0]) return;
       const currentZoom = opt.geo[0].zoom;
       
-      // Minimum zoom to see markers
-      const showMarkers = currentZoom > 3.0;
-      
-      if (layerState.zoomMarkers !== showMarkers) {
-        layerState.zoomMarkers = showMarkers;
+      let newLodLevel = 0;
+      if (currentZoom >= 4.5) newLodLevel = 2;      // Toàn bộ
+      else if (currentZoom >= 3.0) newLodLevel = 1; // Kinh đô + Đại thành
+      else newLodLevel = 0;                         // Chỉ Kinh đô
+
+      if (layerState.lodLevel !== newLodLevel) {
+        layerState.lodLevel = newLodLevel;
         chartInstance.setOption({
           series: [
-            { id: 'sc-terrain', data: showMarkers ? getTerrainData() : [] },
-            { id: 'sc-capitals', data: (showMarkers && layerState.markers) ? getCapData() : [] },
-            { id: 'sc-cities', data: (showMarkers && layerState.markers) ? getCityData() : [] }
+            { id: 'sc-terrain', data: newLodLevel >= 1 ? getTerrainData() : [] },
+            { id: 'sc-capitals', data: layerState.markers ? getCapData() : [] },
+            { id: 'sc-cities', data: layerState.markers ? getCityData(newLodLevel) : [] }
           ]
         });
       }
