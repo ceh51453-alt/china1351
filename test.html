@@ -133,6 +133,9 @@
   <button class="ctrl-btn active" id="btn-terrain" onclick="toggleLayer('terrain')">
     <span class="icon">⛰️</span> Địa hình
   </button>
+  <button class="ctrl-btn active" id="btn-roads" onclick="toggleLayer('roads')">
+    <span class="icon">🛣️</span> Đường bộ
+  </button>
   <button class="ctrl-btn active" id="btn-patrols" onclick="toggleLayer('patrols')">
     <span class="icon">🗡️</span> Tuần tra
   </button>
@@ -330,7 +333,7 @@ const getTerrainData = () => layerState.terrain ? TERRAIN_MARKERS.map(t => {
 }) : [];
 
 // === LAYER VISIBILITY STATE ===
-const layerState = { states: true, provinces: true, markers: true, terrain: true, patrols: true };
+const layerState = { states: true, provinces: true, markers: true, terrain: true, roads: true, patrols: true };
 let chartInstance = null;
 let stateRegions = [];
 let provRegions = [];
@@ -349,8 +352,8 @@ const MARKERS = [
   // ═══ Trung Thư tỉnh bổ sung ═══
   { name:'Hà Gian',    vi:'Hà Bắc — trạm dịch Đại Vận Hà',       coords:[116.1,38.4],  type:'city', faction:'yuan' },
   { name:'Bảo Định',   vi:'Bắc bình nguyên trọng trấn',           coords:[115.5,38.9],  type:'city', faction:'yuan' },
-  { name:'Quảng Bình',  vi:'Hà Bắc tây nam (Vĩnh Niên)',          coords:[114.7,36.6],  type:'city', faction:'yuan' },
-  { name:'Hoài Khánh',  vi:'Hà Nam bắc bộ (Thấm Dương)',          coords:[113.0,35.1],  type:'city', faction:'yuan' },
+  { name:'Quảng Bình',  vi:'Hà Bắc tây nam (Vĩnh Niên)',          coords:[114.4,36.5],  type:'city', faction:'yuan' },
+  { name:'Hoài Khánh',  vi:'Hà Nam bắc bộ (Thấm Dương)',          coords:[112.8,35.1],  type:'city', faction:'yuan' },
   { name:'Bân Châu',    vi:'Sơn Đông bắc bộ duyên hải',           coords:[118.0,37.4],  type:'city', faction:'yuan' },
   { name:'Ích Đô',      vi:'Thanh Châu — Sơn Đông trung bộ',      coords:[118.5,36.7],  type:'city', faction:'yuan' },
 
@@ -362,7 +365,7 @@ const MARKERS = [
   { name:'Thái Nguyên',  vi:'Trấn thủ Sơn Tây',                    coords:[112.5,37.9],  type:'city', faction:'yuan' },
   { name:'Chân Định',   vi:'Hà Bắc trọng trấn',                   coords:[114.5,38.1],  type:'city', faction:'yuan' },
   { name:'Đức Châu',    vi:'Vận Hà trọng địa (Sơn Đông)',          coords:[116.3,37.4],  type:'city', faction:'yuan' },
-  { name:'Duyện Châu',  vi:'Sơn Đông tây nam trấn',                coords:[116.6,35.4],  type:'city', faction:'yuan' },
+  { name:'Duyện Châu',  vi:'Sơn Đông tây nam trấn',                coords:[116.9,35.6],  type:'city', faction:'yuan' },
 
   // ═══ HÀ NAM GIANG BẮC (河南江北) ═══
   { name:'Tương Dương', vi:'Pháo đài Kinh Tương bất khả xâm',     coords:[112.1,32.0],  type:'city', faction:'yuan' },
@@ -419,7 +422,7 @@ const MARKERS = [
   { name:'Cư Dung Quan', vi:'Cửa ải bảo vệ Đại Đô',              coords:[116.0,40.3],  type:'city', faction:'yuan' },
   { name:'Nhạn Môn Quan', vi:'Cửa ải Sơn Tây phòng bắc',         coords:[112.5,39.2],  type:'city', faction:'yuan' },
   { name:'Gia Dụ Quan',  vi:'Cửa ải cuối Trường Thành (Tây)',     coords:[98.2,39.8],   type:'city', faction:'yuan' },
-  { name:'Hàm Cốc Quan', vi:'Cửa ải Hà Nam yết hầu',             coords:[111.0,34.5],  type:'city', faction:'yuan' },
+  { name:'Hàm Cốc Quan', vi:'Cửa ải Hà Nam yết hầu',             coords:[110.8,34.5],  type:'city', faction:'yuan' },
   { name:'Võ Quan',      vi:'Cửa ải phòng thủ Kinh Nguyên',       coords:[106.6,35.7],  type:'city', faction:'yuan' },
 
   // ═══ LĨNH BẮC (岭北) — Mông Cổ ═══
@@ -461,7 +464,7 @@ const MARKERS = [
 
   // ═══ Hà Nam Giang Bắc bổ sung ═══
   { name:'Quy Đức',      vi:'Thương Khâu — Hà Nam',               coords:[115.6,34.4],  type:'city', faction:'yuan' },
-  { name:'Nhữ Ninh',     vi:'Nhữ Châu — Hà Nam trung bộ',         coords:[112.8,33.7],  type:'city', faction:'yuan' },
+  { name:'Nhữ Ninh',     vi:'Nhữ Châu — Hà Nam trung bộ',         coords:[112.8,33.3],  type:'city', faction:'yuan' },
   { name:'Nam Dương',    vi:'Đặng Châu — Hà Nam tây nam',         coords:[112.5,33.0],  type:'city', faction:'yuan' },
   { name:'Trừ Châu',     vi:'An Huy đông bộ',                     coords:[118.3,32.3],  type:'city', faction:'yuan' },
   { name:'Hoài An',      vi:'Đại Vận Hà trọng địa',               coords:[119.0,33.5],  type:'city', faction:'yuan' },
@@ -495,7 +498,7 @@ const MARKERS = [
   { name:'Sukhothai',    vi:'Thủ đô Tố Khả Thái',                 coords:[99.7,17.0],   type:'city', faction:'sukhothai' },
 
   // === Bổ Sung Thành Trì Vừa/Nhỏ & Địa Hình ===
-  { name:'Thái Hành Sơn', vi:'Thái Hành Sơn Mạch', coords:[113.8,37.1], type:'terrain' },
+  { name:'Thái Hành Sơn', vi:'Thái Hành Sơn Mạch', coords:[113.4,37.5], type:'terrain' },
   { name:'Hoàng Thổ cao nguyên', vi:'Cao nguyên Hoàng Thổ', coords:[108.5,36.2], type:'terrain' },
   { name:'Tần Lĩnh', vi:'Tần Lĩnh Sơn Mạch', coords:[107.8,33.7], type:'terrain' },
   { name:'Thanh Tạng cao nguyên', vi:'Thanh Tạng Cao Nguyên', coords:[94.0,33.0], type:'terrain' },
@@ -503,7 +506,7 @@ const MARKERS = [
   { name:'Bồn địa Tứ Xuyên', vi:'Bồn Địa Tứ Xuyên', coords:[105.5,30.5], type:'terrain' },
   { name:'Thảo nguyên Mông Cổ', vi:'Thảo nguyên Mạc Bắc', coords:[102.0,48.0], type:'terrain' },
   { name:'Gobi', vi:'Sa mạc Qua Bi', coords:[105.0,43.0], type:'terrain' },
-  { name:'Hoa Bắc bình nguyên', vi:'Hoa Bắc Bình Nguyên', coords:[115.0,37.0], type:'terrain' },
+  { name:'Hoa Bắc bình nguyên', vi:'Hoa Bắc Bình Nguyên', coords:[115.8,37.5], type:'terrain' },
   { name:'Hào Châu', vi:'Hào Châu (Phượng Dương)', coords:[117.5,32.9], type:'city', faction:'tianwan' },
   { name:'Hán Khẩu', vi:'Hán Dương/Hán Khẩu', coords:[113.8,30.6], type:'city', faction:'tianwan' },
   { name:'Lộ Châu', vi:'Lộ Châu (Sơn Tây)', coords:[113.11,36.19], type:'city', faction:'yuan' },
@@ -516,7 +519,6 @@ const MARKERS = [
   { name:'Đông Kinh', vi:'Đông Kinh (Cao Ly)', coords:[129.2,35.8], type:'city', faction:'goryeo' },
   { name:'Tây Kinh', vi:'Tây Kinh (Sơn Tây)', coords:[113.2,40.0], type:'city', faction:'yuan' },
   { name:'Sơn Hải Quan', vi:'Sơn Hải Quan', coords:[119.7,40.0], type:'city', faction:'yuan' },
-  { name:'Bờ sông Hoàng Hà', vi:'Hà Nam Tây Bộ', coords:[110.0,34.5], type:'terrain' },
   { name:'Kỳ Châu', vi:'Kỳ Châu', coords:[115.6,30.0], type:'city', faction:'tianwan' },
   { name:'Tín Dương', vi:'Tín Dương Châu', coords:[114.07,32.13], type:'city', faction:'yuan' },
   { name:'Gia Hưng', vi:'Gia Hưng Lộ', coords:[120.75,30.76], type:'city', faction:'yuan' },
@@ -549,7 +551,6 @@ const MARKERS = [
   { name:'Trạch Châu', vi:'Trạch Châu Lộ', coords:[112.85,35.5], type:'city', faction:'yuan' },
   { name:'Đông Bình', vi:'Đông Bình Lộ', coords:[116.3,35.93], type:'city', faction:'yuan' },
   { name:'Thái An', vi:'Thái An Châu', coords:[117.12,36.19], type:'city', faction:'yuan' },
-  { name:'Duyện Châu', vi:'Duyện Châu', coords:[116.82,35.53], type:'city', faction:'yuan' },
   { name:'Cáp Mật', vi:'Cáp Mật Vệ', coords:[93.5,42.8], type:'city', faction:'chagatai' },
   { name:'Thổ Lỗ Phồn', vi:'Cao Xương (Thổ Lỗ Phồn)', coords:[89.1,42.9], type:'city', faction:'chagatai' },
   { name:'Trương Dịch', vi:'Cam Châu (Trương Dịch)', coords:[100.4,38.9], type:'city', faction:'yuan' },
@@ -566,17 +567,15 @@ const MARKERS = [
   { name:'Thiệu Vũ', vi:'Thiệu Vũ Lộ', coords:[117.4,27.3], type:'city', faction:'yuan' },
   { name:'Khánh Dương', vi:'Khánh Dương Phủ', coords:[107.6,36.1], type:'city', faction:'yuan' },
   { name:'Uyển Câu', vi:'Hứa Châu', coords:[113.8,34.0], type:'city', faction:'yuan' },
-  { name:'Nhữ Châu', vi:'Nhữ Châu', coords:[112.8,34.1], type:'city', faction:'yuan' },
   { name:'Bạc Châu', vi:'Bạc Châu', coords:[115.7,33.8], type:'city', faction:'yuan' },
   { name:'Trần Châu', vi:'Trần Châu (Hoài Dương)', coords:[114.8,33.7], type:'city', faction:'yuan' },
   { name:'Đại Tăng', vi:'Cát Châu (Sơn Tây)', coords:[110.6,36.1], type:'city', faction:'yuan' },
   { name:'Phân Châu', vi:'Phân Châu (Sơn Tây)', coords:[111.7,37.2], type:'city', faction:'yuan' },
-  { name:'Thuận Đức', vi:'Thuận Đức Lộ (Hình Đài)', coords:[114.5,37.0], type:'city', faction:'yuan' },
-  { name:'Quảng Bình', vi:'Quảng Bình Lộ', coords:[114.8,36.6], type:'city', faction:'yuan' },
-  { name:'Đại Danh', vi:'Đại Danh Lộ', coords:[115.1,36.2], type:'city', faction:'yuan' },
+  { name:'Thuận Đức', vi:'Thuận Đức Lộ (Hình Đài)', coords:[114.5,37.1], type:'city', faction:'yuan' },
+  { name:'Đại Danh', vi:'Đại Danh Lộ', coords:[115.1,36.1], type:'city', faction:'yuan' },
   { name:'Cao Mật', vi:'Mật Châu (Sơn Đông)', coords:[119.7,35.9], type:'city', faction:'yuan' },
   { name:'Cử Châu', vi:'Cử Châu (Sơn Đông)', coords:[118.8,35.5], type:'city', faction:'yuan' },
-  { name:'Tế Ninh', vi:'Tế Ninh Lộ', coords:[116.5,35.4], type:'city', faction:'yuan' },
+  { name:'Tế Ninh', vi:'Tế Ninh Lộ', coords:[116.3,35.1], type:'city', faction:'yuan' },
   { name:'Từ Châu', vi:'Từ Châu Lộ', coords:[117.1,34.2], type:'city', faction:'yuan' },
   { name:'Bảo Ninh', vi:'Bảo Ninh Lộ (Lãng Trung)', coords:[105.9,31.5], type:'city', faction:'yuan' },
   { name:'Tuyên Hóa', vi:'Tuyên Hóa Lộ', coords:[115.0,40.6], type:'city', faction:'yuan' },
@@ -647,6 +646,36 @@ const getCityData = (lodLevel = 2) => layerState.markers ? MARKERS.filter(m=>m.t
     label: { show:true, formatter: m.name, position:'right', color:labelColor, fontSize:labelFontSize, fontFamily:'Noto Serif', fontWeight:'600', textBorderColor:'#111', textBorderWidth:2.5, textShadowColor:'rgba(0,0,0,0.8)', textShadowBlur:4, offset: offset }
   };
 }) : [];
+// === ROADS & TRADE ROUTES ===
+const ROAD_ROUTES = [
+  ['Đại Đô', 'Thượng Đô'], ['Đại Đô', 'Bảo Định'], ['Bảo Định', 'Chân Định'], ['Chân Định', 'Khai Phong'], 
+  ['Đại Đô', 'Liêu Dương'], ['Liêu Dương', 'Thẩm Dương'], ['Đại Đô', 'Đại Đồng'],
+  ['Khai Phong', 'Duyện Châu'], ['Duyện Châu', 'Tế Nam'], ['Tế Nam', 'Hà Gian'], ['Hà Gian', 'Đại Đô'],
+  ['Khai Phong', 'Lạc Dương'], ['Lạc Dương', 'Hàm Cốc Quan'], ['Hàm Cốc Quan', 'Trường An'],
+  ['Trường An', 'Hán Trung'], ['Hán Trung', 'Kiếm Các'], ['Kiếm Các', 'Thành Đô'],
+  ['Thành Đô', 'Trùng Khánh'], ['Trùng Khánh', 'Quý Dương'], ['Thành Đô', 'Đại Lý'], ['Đại Lý', 'Trung Khánh'],
+  ['Trường An', 'Lan Châu'], ['Lan Châu', 'Lương Châu'], ['Lương Châu', 'Cam Châu'], ['Cam Châu', 'Gia Dụ Quan'],
+  ['Tập Khánh', 'Bình Giang'], ['Bình Giang', 'Hàng Châu'], ['Hàng Châu', 'Khánh Nguyên'], 
+  ['Hàng Châu', 'Ôn Châu'], ['Ôn Châu', 'Phúc Châu'], ['Phúc Châu', 'Tuyền Châu'], ['Tuyền Châu', 'Quảng Châu'],
+  ['Khai Phong', 'Hào Châu'], ['Hào Châu', 'Tập Khánh'], ['Khai Phong', 'Tương Dương'],
+  ['Tương Dương', 'Vũ Xương'], ['Vũ Xương', 'Trường Sa'], ['Trường Sa', 'Quế Lâm'], ['Trường Sa', 'Hành Châu'],
+];
+
+const getRoadData = (lodLevel = 2) => {
+  if (!layerState.roads || lodLevel === 0) return [];
+  let data = [];
+  ROAD_ROUTES.forEach(r => {
+    let from = MARKERS.find(m => m.name === r[0]);
+    let to = MARKERS.find(m => m.name === r[1]);
+    if (from && to) {
+      data.push({
+        coords: [from.coords, to.coords],
+        lineStyle: { color: 'rgba(201, 190, 150, 0.25)', width: 1.2, type: 'solid', curveness: 0.15 }
+      });
+    }
+  });
+  return data;
+};
 
 // === PATROLS ===
 const PATROL_ROUTES = [
@@ -938,6 +967,7 @@ function initMap() {
 
     series: [
       { id: 'sc-terrain', name:'terrain', type:'scatter', coordinateSystem:'geo', data:getTerrainData(), z:5, silent:false, animation:false },
+      { id: 'ls-roads', name:'roads', type:'lines', coordinateSystem:'geo', data:getRoadData(2), z:6, silent:true },
       { id: 'sc-capitals', name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
       { id: 'sc-cities', name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
       { id: 'ls-patrols', name:'patrols', type:'lines', coordinateSystem:'geo', data:getPatrolData(2), z:8, progressiveThreshold: 500, effect: { show: true } }
@@ -968,6 +998,7 @@ function initMap() {
             { id: 'sc-terrain', data: newLodLevel >= 1 ? getTerrainData() : [] },
             { id: 'sc-capitals', data: layerState.markers ? getCapData() : [] },
             { id: 'sc-cities', data: layerState.markers ? getCityData(newLodLevel) : [] },
+            { id: 'ls-roads', data: getRoadData(newLodLevel) },
             { id: 'ls-patrols', data: getPatrolData(newLodLevel) }
           ]
         });
@@ -1103,8 +1134,8 @@ function toggleLayer(layer) {
   if (layer === 'markers') {
     chartInstance.setOption({
       series: [
-        { id: 'sc-capitals', data: getCapData() },
-        { id: 'sc-cities', data: getCityData() },
+        { id: 'sc-capitals', data: layerState.markers ? getCapData() : [] },
+        { id: 'sc-cities', data: layerState.markers ? getCityData(layerState.lodLevel) : [] },
       ]
     });
   }
@@ -1112,7 +1143,15 @@ function toggleLayer(layer) {
   if (layer === 'patrols') {
     chartInstance.setOption({
       series: [
-        { id: 'ls-patrols', data: getPatrolData(layerState.lodLevel) }
+        { id: 'ls-patrols', data: layerState.patrols ? getPatrolData(layerState.lodLevel) : [] }
+      ]
+    });
+  }
+
+  if (layer === 'roads') {
+    chartInstance.setOption({
+      series: [
+        { id: 'ls-roads', data: getRoadData(layerState.lodLevel) }
       ]
     });
   }
