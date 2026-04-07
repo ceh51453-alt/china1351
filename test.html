@@ -133,6 +133,9 @@
   <button class="ctrl-btn active" id="btn-terrain" onclick="toggleLayer('terrain')">
     <span class="icon">⛰️</span> Địa hình
   </button>
+  <button class="ctrl-btn active" id="btn-patrols" onclick="toggleLayer('patrols')">
+    <span class="icon">🗡️</span> Tuần tra
+  </button>
 </div>
 
 <!-- LEGEND -->
@@ -171,7 +174,7 @@
       <div class="info-vi" id="i-vi"></div>
       <div class="info-type" id="i-type"></div>
     </div>
-    <canvas id="faction-sprite" width="60" height="60" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; display: none; object-fit: contain; margin-bottom: 2px;"></canvas>
+    <img id="faction-icon" width="60" height="60" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; display: none; object-fit: contain; margin-bottom: 2px;">
   </div>
   <div class="info-b">
     <div class="info-r" id="i-cap-r"><div class="info-l">Thủ đô</div><div class="info-v" id="i-cap"></div></div>
@@ -327,7 +330,7 @@ const getTerrainData = () => layerState.terrain ? TERRAIN_MARKERS.map(t => {
 }) : [];
 
 // === LAYER VISIBILITY STATE ===
-const layerState = { states: true, provinces: true, markers: true, terrain: true };
+const layerState = { states: true, provinces: true, markers: true, terrain: true, patrols: true };
 let chartInstance = null;
 let stateRegions = [];
 let provRegions = [];
@@ -654,6 +657,44 @@ const getCityData = (lodLevel = 2) => layerState.markers ? MARKERS.filter(m=>m.t
   };
 }) : [];
 
+// === PATROLS ===
+const PATROL_ROUTES = [
+  ['Đại Đô', 'Khai Phong'],
+  ['Khai Phong', 'Lạc Dương'],
+  ['Lạc Dương', 'Trường An'],
+  ['Khai Phong', 'Tập Khánh'],
+  ['Tập Khánh', 'Hàng Châu'],
+  ['Tương Dương', 'Vũ Xương'],
+  ['Thành Đô', 'Trùng Khánh'],
+  ['Thăng Long', 'Diễn Châu']
+];
+
+const getPatrolData = (lodLevel = 2) => {
+  if (!layerState.patrols || lodLevel === 0) return [];
+  let data = [];
+  PATROL_ROUTES.forEach(r => {
+    let from = MARKERS.find(m => m.name === r[0]);
+    let to = MARKERS.find(m => m.name === r[1]);
+    if (from && to) {
+      for (let i = 0; i < 3; i++) { // 3 toán quân trên mỗi tuyến
+        data.push({
+          coords: [from.coords, to.coords],
+          lineStyle: { color: 'rgba(201,169,110, 0.4)', width: 1.5, type: 'dashed', curveness: 0.2 },
+          effect: { 
+            show: true, 
+            period: 6, // 6 giây đi hết 1 chiều
+            delay: i * 2000, // Các toán cách nhau 2 giây
+            trailLength: 0, 
+            symbol: 'image://assets/icon_army.png', 
+            symbolSize: 22 
+          }
+        });
+      }
+    }
+  });
+  return data;
+};
+
 // === INIT ===
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { initMap(); document.getElementById('ld').classList.add('off'); }, 1600);
@@ -896,6 +937,7 @@ function initMap() {
       { id: 'sc-terrain', name:'terrain', type:'scatter', coordinateSystem:'geo', data:getTerrainData(), z:5, silent:false, animation:false },
       { id: 'sc-capitals', name:'capitals', type:'scatter', coordinateSystem:'geo', data:getCapData(), z:10 },
       { id: 'sc-cities', name:'cities', type:'scatter', coordinateSystem:'geo', data:getCityData(), z:9 },
+      { id: 'ls-patrols', name:'patrols', type:'lines', coordinateSystem:'geo', data:getPatrolData(2), z:8, progressiveThreshold: 500, effect: { show: true } }
     ]
   };
 
@@ -922,7 +964,8 @@ function initMap() {
           series: [
             { id: 'sc-terrain', data: newLodLevel >= 1 ? getTerrainData() : [] },
             { id: 'sc-capitals', data: layerState.markers ? getCapData() : [] },
-            { id: 'sc-cities', data: layerState.markers ? getCityData(newLodLevel) : [] }
+            { id: 'sc-cities', data: layerState.markers ? getCityData(newLodLevel) : [] },
+            { id: 'ls-patrols', data: getPatrolData(newLodLevel) }
           ]
         });
       }
@@ -981,7 +1024,6 @@ function initMap() {
 }
 
 // === INFO PANEL ===
-let currentAnimator = null;
 
 function showInfo(p) {
   const panel = document.getElementById('info');
@@ -1008,29 +1050,29 @@ function showInfo(p) {
   panel.querySelector('.info-h').style.borderLeft = `3px solid ${p.COLOR||'#C9A96E'}`;
   panel.classList.add('vis');
 
-  const canvas = document.getElementById('faction-sprite');
-  if (currentAnimator) {
-      currentAnimator.destroy();
-      currentAnimator = null;
-  }
+  const iconImg = document.getElementById('faction-icon');
   
-  if (p.TYPE !== 'terrain' && p.TYPE !== 'province') {
-      canvas.style.display = 'block';
-      // Load mẫu sprite sheet 2x2. Nếu bạn có nhiều ảnh sprite cho từng nước, có thể dùng `assets/${p.faction}_sprite.png`
-      currentAnimator = new SpriteAnimator(canvas, 'assets/sample_sprite.png', 2, 2, 4);
+  if (p.TYPE === 'capital' || p.TYPE === 'city') {
+      iconImg.style.display = 'block';
+      let iconSrc = 'assets/icon_medium_city.png'; // Mặt định là phủ/châu
+      if (p.TYPE === 'capital') {
+        iconSrc = 'assets/icon_capital.png';
+      } else {
+        const nameLabel = p.NAME_ZH || p.NAME || '';
+        const isLarge = ['Hàng Châu', 'Khai Phong', 'Tuyền Châu', 'Bình Giang', 'Quảng Châu', 'Lạc Dương', 'Trường An', 'Thành Đô', 'Đại Đồng', 'Cát Lâm', 'Liêu Dương'].includes(nameLabel);
+        const isFort = nameLabel.includes('Quan') || nameLabel.includes('Ải') || nameLabel.includes('Môn') || nameLabel.includes('Trấn');
+        
+        if (isLarge) iconSrc = 'assets/icon_large_city.png';
+        else if (isFort) iconSrc = 'assets/icon_fort.png';
+      }
+      iconImg.src = iconSrc;
   } else {
-      canvas.style.display = 'none';
+      iconImg.style.display = 'none';
   }
 }
 
 function closeInfo() { 
   document.getElementById('info').classList.remove('vis'); 
-  if (currentAnimator) {
-      setTimeout(() => {
-          if (currentAnimator) currentAnimator.destroy();
-          currentAnimator = null;
-      }, 300);
-  }
 }
 
 // === LAYER TOGGLE ===
@@ -1058,8 +1100,16 @@ function toggleLayer(layer) {
   if (layer === 'markers') {
     chartInstance.setOption({
       series: [
-        { data: getCapData() },
-        { data: getCityData() },
+        { id: 'sc-capitals', data: getCapData() },
+        { id: 'sc-cities', data: getCityData() },
+      ]
+    });
+  }
+
+  if (layer === 'patrols') {
+    chartInstance.setOption({
+      series: [
+        { id: 'ls-patrols', data: getPatrolData(layerState.lodLevel) }
       ]
     });
   }
