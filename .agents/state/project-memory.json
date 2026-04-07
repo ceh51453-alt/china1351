@@ -1,0 +1,15 @@
+{
+  "project_name": "Bản đồ Đông Á Chí Chính (1351)",
+  "tech_stack": [
+    "HTML5",
+    "CSS3",
+    "Vanilla JS",
+    "ECharts"
+  ],
+  "architecture_decisions": [],
+  "current_phase": "setup",
+  "last_session": "2026-04-07T13:40:30+07:00",
+  "notes": [
+    "Project initialized with Antigravity Kit"
+  ]
+}

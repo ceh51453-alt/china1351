@@ -165,10 +165,13 @@
 <!-- INFO PANEL -->
 <div class="info" id="info">
   <button class="info-close" onclick="closeInfo()">✕</button>
-  <div class="info-h">
-    <div class="info-zh" id="i-zh"></div>
-    <div class="info-vi" id="i-vi"></div>
-    <div class="info-type" id="i-type"></div>
+  <div class="info-h" style="display:flex; justify-content:space-between; align-items:flex-end; gap:8px;">
+    <div>
+      <div class="info-zh" id="i-zh"></div>
+      <div class="info-vi" id="i-vi"></div>
+      <div class="info-type" id="i-type"></div>
+    </div>
+    <canvas id="faction-sprite" width="60" height="60" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; display: none; object-fit: contain; margin-bottom: 2px;"></canvas>
   </div>
   <div class="info-b">
     <div class="info-r" id="i-cap-r"><div class="info-l">Thủ đô</div><div class="info-v" id="i-cap"></div></div>
@@ -193,6 +196,7 @@
 // === Load data locally for dev, CDN for prod ===
 const IS_LOCAL = location.protocol === 'file:';
 </script>
+<script src="js/sprite-animator.js"></script>
 <script src="china_1351.js"></script>
 <script src="lore_1351.js"></script>
 <script>
@@ -972,6 +976,8 @@ function initMap() {
 }
 
 // === INFO PANEL ===
+let currentAnimator = null;
+
 function showInfo(p) {
   const panel = document.getElementById('info');
   document.getElementById('i-zh').textContent = p.NAME_ZH || '';
@@ -996,9 +1002,31 @@ function showInfo(p) {
 
   panel.querySelector('.info-h').style.borderLeft = `3px solid ${p.COLOR||'#C9A96E'}`;
   panel.classList.add('vis');
+
+  const canvas = document.getElementById('faction-sprite');
+  if (currentAnimator) {
+      currentAnimator.destroy();
+      currentAnimator = null;
+  }
+  
+  if (p.TYPE !== 'terrain' && p.TYPE !== 'province') {
+      canvas.style.display = 'block';
+      // Load mẫu sprite sheet 2x2. Nếu bạn có nhiều ảnh sprite cho từng nước, có thể dùng `assets/${p.faction}_sprite.png`
+      currentAnimator = new SpriteAnimator(canvas, 'assets/sample_sprite.png', 2, 2, 4);
+  } else {
+      canvas.style.display = 'none';
+  }
 }
 
-function closeInfo() { document.getElementById('info').classList.remove('vis'); }
+function closeInfo() { 
+  document.getElementById('info').classList.remove('vis'); 
+  if (currentAnimator) {
+      setTimeout(() => {
+          if (currentAnimator) currentAnimator.destroy();
+          currentAnimator = null;
+      }, 300);
+  }
+}
 
 // === LAYER TOGGLE ===
 function toggleLayer(layer) {
